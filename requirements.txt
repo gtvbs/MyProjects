@@ -1,8 +1,0 @@
-flask
-twilio
-google-auth
-gspread
-oauth2client
-requests
-openai
-python-dotenv
