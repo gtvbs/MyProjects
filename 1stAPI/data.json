@@ -1,0 +1,23 @@
+{
+"applications": [
+    {
+      "id": 1,
+      "company": "Google ",
+      "role": "SWE",
+      "status": "Applied"
+    },
+    {
+      "id": 2,
+      "company": "Microsoft ",
+      "role": "Product Manager",
+      "status": "Interviewing"
+    },
+    {
+      "id": 3,
+      "company": "Amazon ",
+      "role": "Data Scientist",
+      "status": "Offer"
+    }
+  ]
+  
+}
