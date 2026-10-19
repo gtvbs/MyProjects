@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subway Runner 3D</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #0f172a;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    #hud {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .hud-box {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(6px);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    .gold { color: #facc15; }
+    #overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      z-index: 20;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 3rem;
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #38bdf8, #facc15, #f43f5e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p { color: #cbd5e1; margin: 6px 0; font-size: 1.05rem; }
+    .controls-hint {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 14px 24px;
+      margin: 18px 0;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    button {
+      margin-top: 15px;
+      padding: 14px 36px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #0f172a;
+      background: #facc15;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+      box-shadow: 0 6px 20px rgba(250, 204, 21, 0.4);
+    }
+    button:hover {
+      background: #fde047;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="hud">
+    <div class="hud-box">
+      SCORE: <span id="score">0</span> &nbsp;|&nbsp; BEST: <span id="best">0</span>
+    </div>
+    <div class="hud-box gold">
+      COINS: <span id="coins">0</span>
+    </div>
+  </div>
+
+  <div id="overlay">
+    <h1 id="title">Subway Runner 3D</h1>
+    <p id="subtitle">Dodge trains, jump barriers, and collect coins!</p>
+    <div class="controls-hint">
+      <b>A / D</b> or <b>&larr; / &rarr;</b> : Switch Lanes<br/>
+      <b>W / Space / &uarr;</b> : Jump over low hurdles<br/>
+      <b>S / &darr;</b> : Roll under high barriers<br/>
+      <i>(Swipe supported on touchscreens)</i>
+    </div>
+    <button id="startBtn">PLAY NOW</button>
+  </div>
+
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // --- SCENE, CAMERA, RENDERER ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1e293b);
+    scene.fog = new THREE.Fog(0x1e293b, 35, 95);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 120);
+    camera.position.set(0, 6.5, 11);
+    camera.lookAt(0, 2, -10);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    // --- LIGHTS ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+    dirLight.position.set(15, 30, 20);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
+
+    // --- CONSTANTS & STATE ---
+    const LANES = [-3, 0, 3];
+    let currentLane = 1; // 0: Left, 1: Center, 2: Right
+    let isRunning = false;
+    let score = 0;
+    let coins = 0;
+    let bestScore = parseInt(localStorage.getItem('subway_best') || '0', 10);
+    document.getElementById('best').innerText = bestScore;
+
+    let speed = 0.42;
+    let velocityY = 0;
+    const gravity = -0.028;
+    let isJumping = false;
+    let isRolling = false;
+    let rollTimer = 0;
+
+    // --- TRACK & ENVIRONMENT ---
+    const groundGeo = new THREE.PlaneGeometry(14, 300);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x334155 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.z = -120;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Railway sleepers & rails
+    const sleepers = [];
+    const sleeperGeo = new THREE.BoxGeometry(2.2, 0.1, 0.4);
+    const sleeperMat = new THREE.MeshStandardMaterial({ color: 0x475569 });
+
+    for (let z = 10; z > -110; z -= 3) {
+      LANES.forEach(laneX => {
+        const s = new THREE.Mesh(sleeperGeo, sleeperMat);
+        s.position.set(laneX, 0.05, z);
+        scene.add(s);
+        sleepers.push(s);
+      });
+    }
+
+    LANES.forEach(laneX => {
+      [-0.7, 0.7].forEach(offset => {
+        const railGeo = new THREE.BoxGeometry(0.12, 0.18, 300);
+        const railMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.6, roughness: 0.3 });
+        const rail = new THREE.Mesh(railGeo, railMat);
+        rail.position.set(laneX + offset, 0.1, -120);
+        scene.add(rail);
+      });
+    });
+
+    // --- PLAYER CHARACTER ---
+    const playerGroup = new THREE.Group();
+    const bodyGeo = new THREE.BoxGeometry(1.1, 1.8, 0.9);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8 });
+    const playerMesh = new THREE.Mesh(bodyGeo, bodyMat);
+    playerMesh.position.y = 0.9;
+    playerMesh.castShadow = true;
+    playerGroup.add(playerMesh);
+
+    const headGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+    const headMat = new THREE.MeshStandardMaterial({ color: 0xfde047 });
+    const headMesh = new THREE.Mesh(headGeo, headMat);
+    headMesh.position.y = 2.2;
+    playerGroup.add(headMesh);
+
+    playerGroup.position.set(LANES[currentLane], 0, 4);
+    scene.add(playerGroup);
+
+    // --- OBSTACLES & COINS ---
+    let obstacles = [];
+    let coinItems = [];
+    let spawnTimer = 0;
+
+    function createObstacle() {
+      const lane = Math.floor(Math.random() * 3);
+      const x = LANES[lane];
+      const z = -95;
+      const rand = Math.random();
+
+      if (rand < 0.4) {
+        // ONCOMING TRAIN (Must switch lanes)
+        const trainGeo = new THREE.BoxGeometry(2.4, 3.6, 12);
+        const trainMat = new THREE.MeshStandardMaterial({ color: 0xef4444 });
+        const train = new THREE.Mesh(trainGeo, trainMat);
+        train.position.set(x, 1.8, z);
+        train.castShadow = true;
+        scene.add(train);
+        obstacles.push({ mesh: train, type: 'train', moving: true });
+      } else if (rand < 0.72) {
+        // LOW HURDLE (Must jump over)
+        const lowGeo = new THREE.BoxGeometry(2.3, 1.1, 0.5);
+        const lowMat = new THREE.MeshStandardMaterial({ color: 0xf97316 });
+        const low = new THREE.Mesh(lowGeo, lowMat);
+        low.position.set(x, 0.55, z);
+        low.castShadow = true;
+        scene.add(low);
+        obstacles.push({ mesh: low, type: 'low', moving: false });
+      } else {
+        // HIGH BARRIER (Must roll under)
+        const highGroup = new THREE.Group();
+        const barGeo = new THREE.BoxGeometry(2.4, 1.4, 0.5);
+        const barMat = new THREE.MeshStandardMaterial({ color: 0xa855f7 });
+        const topBar = new THREE.Mesh(barGeo, barMat);
+        topBar.position.y = 2.2;
+        highGroup.add(topBar);
+        highGroup.position.set(x, 0, z);
+        scene.add(highGroup);
+        obstacles.push({ mesh: highGroup, type: 'high', moving: false });
+      }
+
+      // Spawn coins in another free lane
+      const coinLane = (lane + 1 + Math.floor(Math.random() * 2)) % 3;
+      const coinGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.15, 16);
+      const coinMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.7, roughness: 0.2 });
+      for (let i = 0; i < 4; i++) {
+        const c = new THREE.Mesh(coinGeo, coinMat);
+        c.rotation.z = Math.PI / 2;
+        c.position.set(LANES[coinLane], 1.1, z - i * 3.2);
+        scene.add(c);
+        coinItems.push(c);
+      }
+    }
+
+    // --- CONTROLS ---
+    function moveLeft() {
+      if (currentLane > 0) currentLane--;
+    }
+    function moveRight() {
+      if (currentLane < 2) currentLane++;
+    }
+    function jump() {
+      if (!isJumping) {
+        velocityY = 0.46;
+        isJumping = true;
+        isRolling = false;
+        playerGroup.scale.y = 1;
+      }
+    }
+    function roll() {
+      if (isJumping) {
+        velocityY = -0.55; // Fast slam down
+      }
+      isRolling = true;
+      rollTimer = 28;
+      playerGroup.scale.y = 0.45;
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (!isRunning) return;
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') moveLeft();
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') moveRight();
+      if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') jump();
+      if (e.code === 'ArrowDown' || e.code === 'KeyS') roll();
+    });
+
+    // Touch Swipe Support
+    let touchStartX = 0, touchStartY = 0;
+    window.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    });
+    window.addEventListener('touchend', e => {
+      if (!isRunning) return;
+      const dx = e.changedTouches[0].screenX - touchStartX;
+      const dy = e.changedTouches[0].screenY - touchStartY;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 30) moveRight();
+        else if (dx < -30) moveLeft();
+      } else {
+        if (dy < -30) jump();
+        else if (dy > 30) roll();
+      }
+    });
+
+    // --- GAME LOOP & COLLISION ---
+    function resetGame() {
+      obstacles.forEach(o => scene.remove(o.mesh));
+      coinItems.forEach(c => scene.remove(c));
+      obstacles = [];
+      coinItems = [];
+      currentLane = 1;
+      playerGroup.position.set(0, 0, 4);
+      playerGroup.scale.y = 1;
+      score = 0;
+      coins = 0;
+      speed = 0.42;
+      isJumping = false;
+      isRolling = false;
+      document.getElementById('score').innerText = '0';
+      document.getElementById('coins').innerText = '0';
+      document.getElementById('overlay').style.display = 'none';
+      isRunning = true;
+    }
+
+    function gameOver() {
+      isRunning = false;
+      if (Math.floor(score) > bestScore) {
+        bestScore = Math.floor(score);
+        localStorage.setItem('subway_best', bestScore);
+        document.getElementById('best').innerText = bestScore;
+      }
+      document.getElementById('title').innerText = 'Crashed!';
+      document.getElementById('subtitle').innerText = `Final Score: ${Math.floor(score)} | Coins: ${coins}`;
+      document.getElementById('startBtn').innerText = 'PLAY AGAIN';
+      document.getElementById('overlay').style.display = 'flex';
+    }
+
+    document.getElementById('startBtn').addEventListener('click', resetGame);
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (isRunning) {
+        speed += 0.00012; // Gradually speed up
+        score += speed * 0.5;
+        document.getElementById('score').innerText = Math.floor(score);
+
+        // Smooth lane transition
+        const targetX = LANES[currentLane];
+        playerGroup.position.x += (targetX - playerGroup.position.x) * 0.22;
+
+        // Jump physics
+        if (isJumping) {
+          playerGroup.position.y += velocityY;
+          velocityY += gravity;
+          if (playerGroup.position.y <= 0) {
+            playerGroup.position.y = 0;
+            isJumping = false;
+            velocityY = 0;
+          }
+        }
+
+        // Roll duration
+        if (isRolling) {
+          rollTimer--;
+          if (rollTimer <= 0) {
+            isRolling = false;
+            playerGroup.scale.y = 1;
+          }
+        }
+
+        // Move sleepers for speed illusion
+        sleepers.forEach(s => {
+          s.position.z += speed;
+          if (s.position.z > 12) s.position.z -= 120;
+        });
+
+        // Spawn obstacles
+        spawnTimer++;
+        if (spawnTimer > Math.max(28, Math.floor(55 - speed * 25))) {
+          createObstacle();
+          spawnTimer = 0;
+        }
+
+        // Update Obstacles & Check Collisions
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          const obs = obstacles[i];
+          obs.mesh.position.z += obs.moving ? speed * 1.35 : speed;
+
+          // Check Z and X proximity
+          const dz = Math.abs(obs.mesh.position.z - playerGroup.position.z);
+          const dx = Math.abs(obs.mesh.position.x - playerGroup.position.x);
+          const zThreshold = obs.type === 'train' ? 6.2 : 0.7;
+
+          if (dz < zThreshold && dx < 1.1) {
+            if (obs.type === 'train') {
+              gameOver();
+            } else if (obs.type === 'low' && playerGroup.position.y < 1.05) {
+              gameOver();
+            } else if (obs.type === 'high' && !isRolling) {
+              gameOver();
+            }
+          }
+
+          if (obs.mesh.position.z > 18) {
+            scene.remove(obs.mesh);
+            obstacles.splice(i, 1);
+          }
+        }
+
+        // Update Coins & Collection
+        for (let i = coinItems.length - 1; i >= 0; i--) {
+          const c = coinItems[i];
+          c.position.z += speed;
+          c.rotation.y += 0.08;
+
+          const dz = Math.abs(c.position.z - playerGroup.position.z);
+          const dx = Math.abs(c.position.x - playerGroup.position.x);
+          if (dz < 0.9 && dx < 1.1 && playerGroup.position.y < 2.2) {
+            coins++;
+            score += 10;
+            document.getElementById('coins').innerText = coins;
+            scene.remove(c);
+            coinItems.splice(i, 1);
+            continue;
+          }
+
+          if (c.position.z > 15) {
+            scene.remove(c);
+            coinItems.splice(i, 1);
+          }
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    animate();
+  </script>
+</body>
+</html>
