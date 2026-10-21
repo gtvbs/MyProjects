@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#09090b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <title>RecompIQ — Body Recomposition & Strength Analytics</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: var(--font-sans);
+      background-color: #09090b;
+      color: #fafafa;
+      overflow-x: hidden;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 9999px;
+    }
+    .surface-card {
+      background-color: #121215;
+      border: 1px solid #222227;
+    }
+    .surface-subtle {
+      background-color: #18181c;
+      border: 1px solid #27272a;
+    }
+    .input-minimal {
+      background-color: #09090b;
+      border: 1px solid #27272a;
+      color: #fafafa;
+      transition: border-color 0.15s ease;
+    }
+    .input-minimal:focus {
+      outline: none;
+      border-color: #10b981;
+    }
+    .tab-active-desktop {
+      background-color: #fafafa;
+      color: #09090b;
+      font-weight: 600;
+    }
+    .tab-active-mobile {
+      color: #10b981;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.7);
+      cursor: pointer;
+    }
+    /* Phone Frame Preview Mode */
+    body.phone-preview-mode {
+      background-color: #040405;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px 0;
+    }
+    body.phone-preview-mode #appRootWrapper {
+      width: 412px;
+      max-width: 100vw;
+      height: 860px;
+      max-height: 94vh;
+      border: 8px solid #27272a;
+      border-radius: 40px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background-color: #09090b;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85);
+      position: relative;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#09090b] text-zinc-100 antialiased selection:bg-emerald-500 selection:text-zinc-950">
+
+  <div id="appRootWrapper" class="min-h-screen flex flex-col w-full">
+
+    <!-- Minimalist Top App Bar -->
+    <header class="sticky top-0 z-30 bg-[#09090b]/90 backdrop-blur-md border-b border-zinc-800/80 px-4 h-14 flex items-center justify-between">
+      <div class="max-w-6xl w-full mx-auto flex items-center justify-between gap-3">
+        <!-- Brand -->
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center text-zinc-950 font-bold text-xs tracking-tighter">
+            RQ
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold tracking-tight text-white">RecompIQ</span>
+            <span class="hidden sm:inline-block text-[10px] mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800">
+              kg · cm · kcal
+            </span>
+          </div>
+        </div>
+
+        <!-- Desktop Segmented Navigation -->
+        <nav class="hidden md:flex items-center gap-1 bg-zinc-900/90 p-1 rounded-lg border border-zinc-800/90" role="tablist">
+          <button type="button" data-tab="dashboard" class="nav-tab-btn tab-active-desktop px-3 py-1 rounded-md text-xs transition">
+            Overview
+          </button>
+          <button type="button" data-tab="analytics" class="nav-tab-btn px-3 py-1 rounded-md text-xs text-zinc-400 hover:text-zinc-100 transition">
+            Analytics &amp; TDEE
+          </button>
+          <button type="button" data-tab="strength" class="nav-tab-btn px-3 py-1 rounded-md text-xs text-zinc-400 hover:text-zinc-100 transition">
+            Training
+          </button>
+          <button type="button" data-tab="nutrition" class="nav-tab-btn px-3 py-1 rounded-md text-xs text-zinc-400 hover:text-zinc-100 transition">
+            Nutrition
+          </button>
+          <button type="button" data-tab="body" class="nav-tab-btn px-3 py-1 rounded-md text-xs text-zinc-400 hover:text-zinc-100 transition">
+            Body &amp; Logs
+          </button>
+        </nav>
+
+        <!-- Right Utility Actions -->
+        <div class="flex items-center gap-1.5">
+          <!-- Mobile Viewport Toggle for testing Play Store look -->
+          <button id="btnTogglePhoneView" type="button" class="px-2.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[11px] font-medium text-zinc-300 flex items-center gap-1.5 transition" title="Toggle Android Phone Frame Preview">
+            <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span id="phoneViewLabel" class="hidden sm:inline">Android View</span>
+          </button>
+
+          <!-- Google Play Export Guide Modal Trigger -->
+          <button id="btnOpenPlayStoreModal" type="button" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-[11px] font-medium text-emerald-400 flex items-center gap-1.5 transition" title="Google Play Store Build & Export Config">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span class="hidden sm:inline">Play Store</span>
+          </button>
+
+          <!-- Targets & Profile -->
+          <button id="btnOpenProfileModal" type="button" class="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-zinc-100 transition" title="Targets & Profile">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+
+          <!-- Data / Backup -->
+          <button id="btnOpenDataModal" type="button" class="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-zinc-100 transition" title="Data & Export">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sub-bar: Date Selector & Recomp Status Summary -->
+    <div class="border-b border-zinc-800/60 bg-[#0c0c0f] px-4 py-2.5">
+      <div class="max-w-6xl w-full mx-auto flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span id="recompHeadlineSummary" class="text-xs font-medium text-zinc-200">
+            30d Recomp: -1.15 kg Fat · +0.45 kg Lean Mass
+          </span>
+          <span class="hidden sm:inline text-zinc-600">|</span>
+          <span id="recompSubSummary" class="hidden sm:inline text-xs text-zinc-400">
+            Expenditure <span class="mono text-zinc-200">2,440 kcal</span> · Target <span class="mono text-emerald-400">2,150 kcal</span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input id="globalActiveDate" type="date" aria-label="Active Log Date" class="px-2.5 py-1 rounded-md input-minimal text-xs mono text-zinc-200" />
+          <button id="btnQuickLogToggle" type="button" class="px-3 py-1 rounded-md bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold text-xs transition">
+            Log Check-In
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-5 pb-24 md:pb-8 space-y-5">
+
+      <!-- ================================================================= -->
+      <!-- TAB 1: OVERVIEW (MINIMALIST KPI GRID + CORE TREND CHARTS + LOG)   -->
+      <!-- ================================================================= -->
+      <section id="tabView_dashboard" class="space-y-5">
+
+        <!-- 6 Minimalist Metric Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <!-- Metric 1: Trend Weight -->
+          <div class="surface-card rounded-xl p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Trend Weight</span>
+              <span id="kpiWeightDeltaBadge" class="text-[10px] mono text-emerald-400">-0.24 kg</span>
+            </div>
+            <div class="my-1.5">
+              <div id="kpiTrendWeightVal" class="text-xl font-semibold text-white mono tracking-tight">76.40 kg</div>
+              <div class="text-[11px] text-zinc-500 mt-0.5">
+                Scale <span id="kpiScaleWeightVal" class="mono text-zinc-300">76.2</span> · Goal <span id="kpiGoalWeightVal" class="mono text-zinc-300">74.0</span>
+              </div>
+            </div>
+            <div class="w-full bg-zinc-800/80 h-1 rounded-full overflow-hidden">
+              <div id="kpiWeightProgressBar" class="bg-emerald-500 h-full rounded-full" style="width: 68%"></div>
+            </div>
+          </div>
+
+          <!-- Metric 2: Adaptive TDEE -->
+          <div class="surface-card rounded-xl p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Adaptive TDEE</span>
+              <span id="kpiEnergyBalanceBadge" class="text-[10px] mono text-zinc-400">-265 kcal</span>
+            </div>
+            <div class="my-1.5">
+              <div id="kpiAdaptiveTdeeVal" class="text-xl font-semibold text-white mono tracking-tight">2,435</div>
+              <div class="text-[11px] text-zinc-500 mt-0.5">
+                Intake <span id="kpiAvgIntakeVal" class="mono text-zinc-300">2,170</span> · Goal <span id="kpiTargetKcalVal" class="mono text-zinc-300">2,150</span>
+              </div>
+            </div>
+            <div class="text-[10px] text-zinc-500 truncate">kcal/day expenditure</div>
+          </div>
+
+          <!-- Metric 3: Body Composition -->
+          <div class="surface-card rounded-xl p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Body Fat</span>
+              <span id="kpiBfDeltaBadge" class="text-[10px] mono text-zinc-400">FFMI 21.4</span>
+            </div>
+            <div class="my-1.5">
+              <div id="kpiBodyFatVal" class="text-xl font-semibold text-white mono tracking-tight">16.2%</div>
+              <div class="text-[11px] text-zinc-500 mt-0.5">
+                LBM <span id="kpiLeanMassVal" class="mono text-emerald-400">64.0</span> · Fat <span id="kpiFatMassVal" class="mono text-zinc-300">12.4</span>
+              </div>
+            </div>
+            <div class="text-[10px] text-zinc-500">
+              Waist <span id="kpiWaistVal" class="mono text-zinc-300">80.2 cm</span> (<span id="kpiWhtrVal" class="mono">0.46</span>)
+            </div>
+          </div>
+
+          <!-- Metric 4: Daily Macros -->
+          <div class="surface-card rounded-xl p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Protein</span>
+              <span id="kpiProteinPerKgBadge" class="text-[10px] mono text-emerald-400">2.16 g/kg</span>
+            </div>
+            <div class="my-1.5">
+              <div id="kpiProteinVal" class="text-xl font-semibold text-white mono tracking-tight">165g</div>
+              <div class="text-[11px] text-zinc-500 mt-0.5">
+                C <span id="kpiCarbsVal" class="mono text-zinc-300">215</span> · F <span id="kpiFatsVal" class="mono text-zinc-300">68</span> · Fib <span id="kpiFiberVal" class="mono text-zinc-300">34</span>
+              </div>
+            </div>
+            <div class="w-full bg-zinc-800/80 h-1 rounded-full overflow-hidden">
+              <div id="kpiProteinBar" class="bg-zinc-200 h-full rounded-full" style="width: 96%"></div>
+            </div>
+          </div>
+
+          <!-- Metric 5: Strength Load -->
+          <div class="surface-card rounded-xl p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Volume Load</span>
+              <span id="kpiHardSetsBadge" class="text-[10px] mono text-zinc-400">58 sets</span>
+            </div>
+            <div class="my-1.5">
+              <div id="kpiWeeklyVolumeVal" class="text-xl font-semibold text-white mono tracking-tight">28.4t</div>
+              <div class="text-[11px] text-zinc-500 mt-0.5 truncate" id="kpiTopE1rmVal">
+                Top e1RM: 151.7 kg
+              </div>
+            </div>
+            <div class="text-[10px] text-emerald-400 mono">+3.8% progressive</div>
+          </div>
+
+          <!-- Metric 6: Recovery & Readiness -->
+          <div class="surface-card rounded-xl p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Readiness</span>
+              <span id="kpiReadinessBadge" class="text-[10px] mono text-emerald-400">88%</span>
+            </div>
+            <div class="my-1.5">
+              <div id="kpiSleepVal" class="text-xl font-semibold text-white mono tracking-tight">7.8h</div>
+              <div class="text-[11px] text-zinc-500 mt-0.5">
+                <span id="kpiStepsVal" class="mono text-zinc-300">9,450</span> steps · <span id="kpiRhrVal" class="mono text-zinc-300">58</span> bpm
+              </div>
+            </div>
+            <div class="text-[10px] text-zinc-500">
+              Water <span id="kpiWaterVal" class="mono text-zinc-300">3.4 L</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Primary Charts + Streamlined Check-In Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+          <!-- Left: Dual Core Analytics Charts (7 cols) -->
+          <div class="lg:col-span-7 space-y-4">
+            <!-- Weight & EWMA Trend Card -->
+            <div class="surface-card rounded-xl p-4">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-300">Weight Trend (EWMA vs Scale)</h2>
+                  <p class="text-[11px] text-zinc-500">7-day exponentially weighted moving average</p>
+                </div>
+                <div class="flex items-center gap-1 bg-zinc-900 p-0.5 rounded-md border border-zinc-800 text-[11px] mono">
+                  <button type="button" data-range="14" class="range-filter-btn px-2 py-0.5 rounded text-zinc-400 hover:text-white">14d</button>
+                  <button type="button" data-range="30" class="range-filter-btn px-2 py-0.5 rounded bg-zinc-100 text-zinc-950 font-semibold">30d</button>
+                  <button type="button" data-range="90" class="range-filter-btn px-2 py-0.5 rounded text-zinc-400 hover:text-white">All</button>
+                </div>
+              </div>
+              <div class="relative h-60 w-full">
+                <canvas id="chartDashboardWeight"></canvas>
+              </div>
+            </div>
+
+            <!-- Recomp Partitioning Card -->
+            <div class="surface-card rounded-xl p-4">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-300">Tissue Partitioning (kg)</h2>
+                  <p class="text-[11px] text-zinc-500">Lean Body Mass vs. Fat Mass trajectory</p>
+                </div>
+                <span id="recompRatioPill" class="text-[11px] mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
+                  LBM +0.45 kg · Fat -1.15 kg
+                </span>
+              </div>
+              <div class="relative h-56 w-full">
+                <canvas id="chartDashboardRecomp"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Minimalist Daily Check-In Composer (5 cols) -->
+          <div id="dailyLoggerCard" class="lg:col-span-5 surface-card rounded-xl p-4 space-y-4">
+            <div class="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+              <div>
+                <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-200">Daily Log</h2>
+                <p class="text-[11px] text-zinc-500">Auto-updates TDEE &amp; body composition</p>
+              </div>
+              <span id="activeLogDateBadge" class="text-[11px] mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-emerald-400">
+                2026-10-20
+              </span>
+            </div>
+
+            <form id="formDailyLog" class="space-y-3">
+              <!-- Anthropometrics Row -->
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <label for="inpWeightKg" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Weight (kg)</label>
+                  <input id="inpWeightKg" type="number" step="0.05" min="30" max="250" required class="w-full px-2.5 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+                <div>
+                  <label for="inpWaistCm" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Waist (cm)</label>
+                  <input id="inpWaistCm" type="number" step="0.1" min="45" max="180" required class="w-full px-2.5 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+                <div>
+                  <label for="inpNeckCm" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Neck (cm)</label>
+                  <input id="inpNeckCm" type="number" step="0.1" min="25" max="70" required class="w-full px-2.5 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+              </div>
+
+              <!-- Macros Box -->
+              <div class="p-3 rounded-lg surface-subtle space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] uppercase tracking-wider font-semibold text-zinc-400">Energy &amp; Macros</span>
+                  <button id="btnAutoCalcKcal" type="button" class="text-[10px] text-emerald-400 hover:underline">
+                    Auto-sum kcal
+                  </button>
+                </div>
+                <div class="grid grid-cols-5 gap-1.5">
+                  <div>
+                    <label for="inpCalories" class="block text-[10px] text-zinc-500 mb-0.5">kcal</label>
+                    <input id="inpCalories" type="number" step="5" min="500" max="8000" required class="w-full px-2 py-1.5 rounded input-minimal text-xs mono font-semibold text-emerald-400" />
+                  </div>
+                  <div>
+                    <label for="inpProteinG" class="block text-[10px] text-zinc-500 mb-0.5">Prot (g)</label>
+                    <input id="inpProteinG" type="number" step="1" min="0" max="500" required class="w-full px-2 py-1.5 rounded input-minimal text-xs mono" />
+                  </div>
+                  <div>
+                    <label for="inpCarbsG" class="block text-[10px] text-zinc-500 mb-0.5">Carb (g)</label>
+                    <input id="inpCarbsG" type="number" step="1" min="0" max="1000" required class="w-full px-2 py-1.5 rounded input-minimal text-xs mono" />
+                  </div>
+                  <div>
+                    <label for="inpFatG" class="block text-[10px] text-zinc-500 mb-0.5">Fat (g)</label>
+                    <input id="inpFatG" type="number" step="1" min="0" max="300" required class="w-full px-2 py-1.5 rounded input-minimal text-xs mono" />
+                  </div>
+                  <div>
+                    <label for="inpFiberG" class="block text-[10px] text-zinc-500 mb-0.5">Fib (g)</label>
+                    <input id="inpFiberG" type="number" step="1" min="0" max="120" class="w-full px-2 py-1.5 rounded input-minimal text-xs mono" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Biofeedback & Recovery Row -->
+              <div class="grid grid-cols-4 gap-2">
+                <div>
+                  <label for="inpWaterL" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Water (L)</label>
+                  <input id="inpWaterL" type="number" step="0.1" min="0" max="12" class="w-full px-2 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+                <div>
+                  <label for="inpSteps" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Steps</label>
+                  <input id="inpSteps" type="number" step="100" min="0" max="50000" class="w-full px-2 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+                <div>
+                  <label for="inpSleepHrs" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Sleep (h)</label>
+                  <input id="inpSleepHrs" type="number" step="0.1" min="0" max="16" class="w-full px-2 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+                <div>
+                  <label for="inpRhrBpm" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">RHR</label>
+                  <input id="inpRhrBpm" type="number" step="1" min="35" max="130" class="w-full px-2 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+              </div>
+
+              <!-- Secondary Circumferences -->
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <label for="inpChestCm" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Chest (cm)</label>
+                  <input id="inpChestCm" type="number" step="0.1" min="60" max="180" class="w-full px-2 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+                <div>
+                  <label for="inpArmCm" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Arm (cm)</label>
+                  <input id="inpArmCm" type="number" step="0.1" min="20" max="65" class="w-full px-2 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+                <div>
+                  <label for="inpEnergyScore" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Energy (1-10)</label>
+                  <input id="inpEnergyScore" type="number" step="1" min="1" max="10" class="w-full px-2 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+              </div>
+
+              <button type="submit" class="w-full py-2.5 px-4 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs transition">
+                Save Entry
+              </button>
+            </form>
+
+            <div id="dailyDiagnosticBox" class="p-3 rounded-lg bg-zinc-900/90 border border-zinc-800 text-[11px] text-zinc-400 space-y-1">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- TAB 2: ADVANCED ANALYTICS, ADAPTIVE TDEE & RECOMP SIMULATOR       -->
+      <!-- ================================================================= -->
+      <section id="tabView_analytics" class="hidden space-y-5">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Adaptive TDEE vs Intake -->
+          <div class="lg:col-span-7 surface-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-300">Expenditure (Adaptive TDEE) vs Intake</h2>
+                <p class="text-[11px] text-zinc-500">Rolling energy expenditure derived from ΔEWMA weight &amp; logged intake</p>
+              </div>
+              <span id="analyticsTdeeBadge" class="text-[11px] mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-emerald-400">
+                2,440 kcal/d
+              </span>
+            </div>
+            <div class="relative h-64 w-full">
+              <canvas id="chartAnalyticsTdee"></canvas>
+            </div>
+          </div>
+
+          <!-- Pearson Correlation Matrix -->
+          <div class="lg:col-span-5 surface-card rounded-xl p-4 flex flex-col justify-between space-y-4">
+            <div>
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-300">Biometric Correlations (Pearson r)</h2>
+              <p class="text-[11px] text-zinc-500">Empirical relationships across your logged dataset</p>
+            </div>
+            <div id="correlationMatrixList" class="space-y-2.5"></div>
+            <div class="p-3 rounded-lg surface-subtle text-[11px] text-zinc-400 leading-relaxed" id="coachAnalyticsInsightText">
+              EWMA weight is trending at -0.31%/wk while waist circumference dropped 1.8 cm and compound e1RM increased +4.1%, confirming lean tissue accretion during fat loss.
+            </div>
+          </div>
+        </div>
+
+        <!-- 12-Week Body Recomposition Simulator -->
+        <div class="surface-card rounded-xl p-4 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/80 pb-3">
+            <div>
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-200">12-Week Recomposition Forecasting Model</h2>
+              <p class="text-[11px] text-zinc-500">Simulate tissue partitioning across caloric delta, protein density, and training volume</p>
+            </div>
+            <span id="simProjectedGoalDateBadge" class="text-[11px] mono px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+              Projected 12W BF: 13.8%
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div class="lg:col-span-5 space-y-4">
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-zinc-400">Daily Energy Balance vs TDEE</span>
+                  <span id="simDeltaLabel" class="mono text-zinc-100 font-medium">-250 kcal</span>
+                </div>
+                <input id="simSliderCalDelta" type="range" min="-600" max="300" step="25" value="-250" class="w-full accent-emerald-500 cursor-pointer h-1.5 bg-zinc-800 rounded-lg" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-zinc-400">Protein Target (g/kg)</span>
+                  <span id="simProteinLabel" class="mono text-zinc-100 font-medium">2.2 g/kg</span>
+                </div>
+                <input id="simSliderProtein" type="range" min="1.4" max="2.8" step="0.1" value="2.2" class="w-full accent-emerald-500 cursor-pointer h-1.5 bg-zinc-800 rounded-lg" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-zinc-400">Resistance Sessions / Week</span>
+                  <span id="simWorkoutsLabel" class="mono text-zinc-100 font-medium">4 days/wk</span>
+                </div>
+                <input id="simSliderWorkouts" type="range" min="1" max="6" step="1" value="4" class="w-full accent-emerald-500 cursor-pointer h-1.5 bg-zinc-800 rounded-lg" />
+              </div>
+
+              <div class="grid grid-cols-3 gap-2 pt-1">
+                <div class="p-2.5 rounded-lg surface-subtle text-center">
+                  <div class="text-[10px] uppercase text-zinc-500">12W Weight</div>
+                  <div id="simOutWeight" class="text-sm font-semibold text-white mono mt-0.5">74.1 kg</div>
+                </div>
+                <div class="p-2.5 rounded-lg surface-subtle text-center">
+                  <div class="text-[10px] uppercase text-zinc-500">Fat Delta</div>
+                  <div id="simOutFatDelta" class="text-sm font-semibold text-zinc-200 mono mt-0.5">-2.95 kg</div>
+                </div>
+                <div class="p-2.5 rounded-lg surface-subtle text-center">
+                  <div class="text-[10px] uppercase text-zinc-500">Lean Delta</div>
+                  <div id="simOutMuscleDelta" class="text-sm font-semibold text-emerald-400 mono mt-0.5">+0.68 kg</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="lg:col-span-7">
+              <div class="relative h-64 w-full">
+                <canvas id="chartRecompSimulator"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- TAB 3: STRENGTH WORKOUT LOGGER & 1RM / VOLUME ANALYTICS           -->
+      <!-- ================================================================= -->
+      <section id="tabView_strength" class="hidden space-y-5">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          <!-- Set Logger -->
+          <div class="lg:col-span-5 surface-card rounded-xl p-4 space-y-4">
+            <div class="border-b border-zinc-800/80 pb-3">
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-200">Log Resistance Set</h2>
+              <p class="text-[11px] text-zinc-500">Epley + Brzycki mean e1RM &amp; hypertrophy volume</p>
+            </div>
+
+            <form id="formStrengthSet" class="space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label for="selExercise" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Movement</label>
+                  <select id="selExercise" class="w-full px-2.5 py-2 rounded-lg input-minimal text-xs">
+                    <option value="Barbell Squat|Quads">Barbell Squat (Quads)</option>
+                    <option value="Bench Press|Chest">Bench Press (Chest)</option>
+                    <option value="Deadlift|Back">Deadlift (Back/Hams)</option>
+                    <option value="Overhead Press|Shoulders">Overhead Press (Shoulders)</option>
+                    <option value="Barbell Row|Back">Barbell Row (Back)</option>
+                    <option value="Weighted Pull-Up|Back">Weighted Pull-Up (Lats)</option>
+                    <option value="Romanian Deadlift|Hamstrings">Romanian Deadlift (Hams)</option>
+                    <option value="Incline DB Press|Chest">Incline DB Press (Chest)</option>
+                    <option value="Lateral Raise|Shoulders">Lateral Raise (Shoulders)</option>
+                    <option value="Barbell Curl|Arms">Barbell Curl (Biceps)</option>
+                    <option value="Skullcrusher / Pushdown|Arms">Rope Pushdown (Triceps)</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="inpWorkoutDate" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Date</label>
+                  <input id="inpWorkoutDate" type="date" class="w-full px-2.5 py-2 rounded-lg input-minimal text-xs mono" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-4 gap-2">
+                <div>
+                  <label for="inpLiftWeightKg" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Load (kg)</label>
+                  <input id="inpLiftWeightKg" type="number" step="0.5" min="1" max="400" value="100" required class="w-full px-2.5 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+                <div>
+                  <label for="inpLiftReps" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Reps</label>
+                  <input id="inpLiftReps" type="number" step="1" min="1" max="50" value="6" required class="w-full px-2.5 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+                <div>
+                  <label for="inpLiftSets" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Sets</label>
+                  <input id="inpLiftSets" type="number" step="1" min="1" max="15" value="3" required class="w-full px-2.5 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+                <div>
+                  <label for="inpLiftRpe" class="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">RPE</label>
+                  <input id="inpLiftRpe" type="number" step="0.5" min="5" max="10" value="8.5" required class="w-full px-2.5 py-1.5 rounded-lg input-minimal text-xs mono" />
+                </div>
+              </div>
+
+              <div class="p-2.5 rounded-lg surface-subtle flex items-center justify-between text-xs">
+                <span class="text-zinc-400">Est. 1RM <strong id="livePreviewE1rm" class="mono text-emerald-400 ml-1">120.0 kg</strong></span>
+                <span class="text-zinc-400">Tonnage <strong id="livePreviewTonnage" class="mono text-zinc-200 ml-1">1,800 kg</strong></span>
+              </div>
+
+              <button type="submit" class="w-full py-2.5 px-4 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs transition">
+                Log Set
+              </button>
+            </form>
+
+            <div class="pt-1">
+              <div class="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold mb-2">Recent Sets</div>
+              <div id="strengthLogsList" class="space-y-1.5 max-h-60 overflow-y-auto pr-1"></div>
+            </div>
+          </div>
+
+          <!-- Strength Charts -->
+          <div class="lg:col-span-7 space-y-4">
+            <div class="surface-card rounded-xl p-4">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-300">Estimated 1RM Progression (kg)</h3>
+                  <p class="text-[11px] text-zinc-500">Strength trajectory across key compound lifts</p>
+                </div>
+                <select id="selChartExerciseFilter" class="px-2.5 py-1 rounded-md input-minimal text-xs">
+                  <option value="Bench Press">Bench Press</option>
+                  <option value="Barbell Squat">Barbell Squat</option>
+                  <option value="Deadlift">Deadlift</option>
+                  <option value="Overhead Press">Overhead Press</option>
+                  <option value="Barbell Row">Barbell Row</option>
+                </select>
+              </div>
+              <div class="relative h-60 w-full">
+                <canvas id="chartStrength1RM"></canvas>
+              </div>
+            </div>
+
+            <div class="surface-card rounded-xl p-4">
+              <div class="mb-3">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-300">Weekly Sets per Muscle Group vs. MAV Target</h3>
+                <p class="text-[11px] text-zinc-500">Compared against 12–16 set Maximum Adaptive Volume landmarks</p>
+              </div>
+              <div class="relative h-56 w-full">
+                <canvas id="chartMuscleVolume"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- TAB 4: NUTRITION & HIGH-PROTEIN MEAL INDEX                        -->
+      <!-- ================================================================= -->
+      <section id="tabView_nutrition" class="hidden space-y-5">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          <!-- Food Database -->
+          <div class="lg:col-span-7 surface-card rounded-xl p-4 space-y-3.5">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/80 pb-3">
+              <div>
+                <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-200">Quick-Add Nutrition Index</h2>
+                <p class="text-[11px] text-zinc-500">Indian, Telugu &amp; global high-protein recomp staples</p>
+              </div>
+              <input id="inpSearchFood" type="text" placeholder="Filter foods..." class="px-2.5 py-1 rounded-md input-minimal text-xs w-44" />
+            </div>
+
+            <div class="flex flex-wrap gap-1 text-[11px]">
+              <button type="button" data-food-cat="all" class="food-cat-btn px-2.5 py-1 rounded-md bg-zinc-100 text-zinc-950 font-semibold">All</button>
+              <button type="button" data-food-cat="telugu" class="food-cat-btn px-2.5 py-1 rounded-md bg-zinc-900 text-zinc-400 border border-zinc-800">Telugu &amp; South Indian</button>
+              <button type="button" data-food-cat="protein" class="food-cat-btn px-2.5 py-1 rounded-md bg-zinc-900 text-zinc-400 border border-zinc-800">High Protein</button>
+              <button type="button" data-food-cat="carbs" class="food-cat-btn px-2.5 py-1 rounded-md bg-zinc-900 text-zinc-400 border border-zinc-800">Carbs &amp; Fats</button>
+            </div>
+
+            <div id="foodPresetsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1"></div>
+
+            <!-- Custom Macro Entry -->
+            <div class="p-3 rounded-lg surface-subtle space-y-2">
+              <div class="text-[10px] uppercase tracking-wider font-semibold text-zinc-400">Custom Macro Entry</div>
+              <div class="grid grid-cols-2 sm:grid-cols-6 gap-1.5">
+                <input id="inpCustomFoodName" type="text" placeholder="Item name" class="col-span-2 px-2 py-1.5 rounded input-minimal text-xs" />
+                <input id="inpCustomFoodKcal" type="number" placeholder="kcal" class="px-2 py-1.5 rounded input-minimal text-xs mono" />
+                <input id="inpCustomFoodP" type="number" placeholder="P (g)" class="px-2 py-1.5 rounded input-minimal text-xs mono" />
+                <input id="inpCustomFoodC" type="number" placeholder="C (g)" class="px-2 py-1.5 rounded input-minimal text-xs mono" />
+                <input id="inpCustomFoodF" type="number" placeholder="F (g)" class="px-2 py-1.5 rounded input-minimal text-xs mono" />
+              </div>
+              <button id="btnAddCustomFood" type="button" class="px-3 py-1.5 rounded-md bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs transition">
+                Add Custom Item
+              </button>
+            </div>
+          </div>
+
+          <!-- Macro Distribution -->
+          <div class="lg:col-span-5 space-y-4">
+            <div class="surface-card rounded-xl p-4 space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-300">Daily Macro Split</h3>
+                <span id="nutritionDayTotalKcal" class="mono text-xs font-semibold text-emerald-400">2,165 / 2,150 kcal</span>
+              </div>
+              <div class="relative h-48 w-full">
+                <canvas id="chartNutritionMacros"></canvas>
+              </div>
+              <div id="nutritionMacroBars" class="space-y-2.5 pt-1"></div>
+            </div>
+
+            <div class="surface-card rounded-xl p-4 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">Logged Items (Session)</span>
+                <button id="btnResetDayMacrosToBaseline" type="button" class="text-[11px] text-zinc-400 hover:text-white">Clear</button>
+              </div>
+              <div id="sessionMealTrayList" class="space-y-1.5 text-xs max-h-40 overflow-y-auto"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- TAB 5: BODY COMPOSITION & HISTORICAL LOGS                         -->
+      <!-- ================================================================= -->
+      <section id="tabView_body" class="hidden space-y-5">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <div class="lg:col-span-5 surface-card rounded-xl p-4 space-y-3.5">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-300 border-b border-zinc-800/80 pb-2.5">
+              Anthropometrics &amp; Navy Body Fat
+            </h2>
+            <div id="anthropometricScorecard" class="grid grid-cols-2 gap-2.5"></div>
+            <p class="text-[11px] text-zinc-500 leading-relaxed">
+              Waist-to-Height Ratio (WHtR) between <span class="mono text-zinc-300">0.42–0.48</span> paired with stable or rising flexed arm circumference verifies visceral fat loss and lean mass retention.
+            </p>
+          </div>
+
+          <div class="lg:col-span-7 surface-card rounded-xl p-4">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-300 mb-3">Waist (cm) vs. Flexed Arm (cm)</h3>
+            <div class="relative h-56 w-full">
+              <canvas id="chartCircumferences"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Log Table -->
+        <div class="surface-card rounded-xl p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-300">Biometric Log History</h3>
+              <p class="text-[11px] text-zinc-500">Select any date to edit or export your dataset</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btnExportCsv" type="button" class="px-2.5 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-200">
+                Export CSV
+              </button>
+              <button id="btnExportJson" type="button" class="px-2.5 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-200">
+                Export JSON
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto max-h-80">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="sticky top-0 bg-[#121215] text-zinc-500 border-b border-zinc-800 text-[10px] uppercase tracking-wider">
+                <tr>
+                  <th class="py-2 px-2.5">Date</th>
+                  <th class="py-2 px-2.5">Scale (kg)</th>
+                  <th class="py-2 px-2.5">Trend (kg)</th>
+                  <th class="py-2 px-2.5">BF %</th>
+                  <th class="py-2 px-2.5">LBM (kg)</th>
+                  <th class="py-2 px-2.5">Waist (cm)</th>
+                  <th class="py-2 px-2.5">kcal</th>
+                  <th class="py-2 px-2.5">P/C/F (g)</th>
+                  <th class="py-2 px-2.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody" class="divide-y divide-zinc-800/60 mono text-[11px]"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar (Android / iOS Industry Standard) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-[#09090b]/95 backdrop-blur-md border-t border-zinc-800 px-2 py-1.5 flex items-center justify-around" role="tablist">
+      <button type="button" data-tab="dashboard" class="nav-tab-btn tab-active-mobile flex flex-col items-center gap-0.5 py-1 px-3 text-[10px] font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Overview</span>
+      </button>
+      <button type="button" data-tab="analytics" class="nav-tab-btn text-zinc-500 flex flex-col items-center gap-0.5 py-1 px-3 text-[10px] font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span>TDEE</span>
+      </button>
+      <button type="button" data-tab="strength" class="nav-tab-btn text-zinc-500 flex flex-col items-center gap-0.5 py-1 px-3 text-[10px] font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11"/><path d="M21 21l-1-1"/><path d="M3 3l1 1"/><path d="M18 22l4-4"/><path d="M2 6l4-4"/><path d="M3 10l7-7"/><path d="M14 21l7-7"/></svg>
+        <span>Training</span>
+      </button>
+      <button type="button" data-tab="nutrition" class="nav-tab-btn text-zinc-500 flex flex-col items-center gap-0.5 py-1 px-3 text-[10px] font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        <span>Macros</span>
+      </button>
+      <button type="button" data-tab="body" class="nav-tab-btn text-zinc-500 flex flex-col items-center gap-0.5 py-1 px-3 text-[10px] font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span>Body</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: PROFILE & RECOMPOSITION TARGETS                              -->
+  <!-- ===================================================================== -->
+  <div id="modalProfile" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="surface-card rounded-2xl max-w-md w-full p-5 space-y-4">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <h3 class="text-sm font-semibold text-white">Recomposition Targets (kg · cm · kcal)</h3>
+        <button id="btnCloseProfileModal" type="button" class="text-zinc-500 hover:text-white text-sm">✕</button>
+      </div>
+
+      <form id="formProfileSettings" class="space-y-3 text-xs">
+        <div class="grid grid-cols-3 gap-2.5">
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-500 mb-1">Sex</label>
+            <select id="profSex" class="w-full px-2.5 py-2 rounded-lg input-minimal">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-500 mb-1">Age</label>
+            <input id="profAge" type="number" min="14" max="95" class="w-full px-2.5 py-2 rounded-lg input-minimal mono" />
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-500 mb-1">Height (cm)</label>
+            <input id="profHeightCm" type="number" step="0.5" min="120" max="230" class="w-full px-2.5 py-2 rounded-lg input-minimal mono" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2.5">
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-500 mb-1">Goal Weight (kg)</label>
+            <input id="profGoalWeightKg" type="number" step="0.1" class="w-full px-2.5 py-2 rounded-lg input-minimal mono" />
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-500 mb-1">Goal BF (%)</label>
+            <input id="profGoalBfPct" type="number" step="0.5" class="w-full px-2.5 py-2 rounded-lg input-minimal mono" />
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-500 mb-1">Target kcal</label>
+            <input id="profTargetKcal" type="number" step="10" class="w-full px-2.5 py-2 rounded-lg input-minimal mono text-emerald-400" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2.5">
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-500 mb-1">Protein (g)</label>
+            <input id="profTargetProtein" type="number" step="1" class="w-full px-2.5 py-2 rounded-lg input-minimal mono" />
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-500 mb-1">Carbs (g)</label>
+            <input id="profTargetCarbs" type="number" step="1" class="w-full px-2.5 py-2 rounded-lg input-minimal mono" />
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-500 mb-1">Fats (g)</label>
+            <input id="profTargetFat" type="number" step="1" class="w-full px-2.5 py-2 rounded-lg input-minimal mono" />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-zinc-800">
+          <button type="button" id="btnAutoRecommendTargets" class="px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-medium">
+            Auto-Set (2.2g/kg P)
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 font-semibold">
+            Save Targets
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: DATA & PORTABILITY                                           -->
+  <!-- ===================================================================== -->
+  <div id="modalData" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="surface-card rounded-2xl max-w-md w-full p-5 space-y-4">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <h3 class="text-sm font-semibold text-white">Data Management &amp; Backup</h3>
+        <button id="btnCloseDataModal" type="button" class="text-zinc-500 hover:text-white text-sm">✕</button>
+      </div>
+      <p class="text-xs text-zinc-400 leading-relaxed">
+        Data is stored offline-first on your device. Export CSV/JSON backups or clear the 30-day sample dataset below.
+      </p>
+      <div class="space-y-2 text-xs">
+        <button id="btnModalReloadDemo" type="button" class="w-full py-2.5 px-3.5 rounded-lg surface-subtle hover:bg-zinc-800 text-zinc-200 font-medium flex justify-between">
+          <span>Restore 30-Day Sample Dataset</span>
+          <span class="mono text-zinc-500">→</span>
+        </button>
+        <button id="btnModalClearAll" type="button" class="w-full py-2.5 px-3.5 rounded-lg bg-rose-950/30 hover:bg-rose-950/50 border border-rose-900/50 text-rose-300 font-medium flex justify-between">
+          <span>Clear Sample Data &amp; Start Fresh</span>
+          <span class="mono">→</span>
+        </button>
+        <div class="pt-2 border-t border-zinc-800">
+          <label class="block text-[10px] uppercase text-zinc-500 mb-1.5">Restore JSON Backup</label>
+          <input id="inpImportJsonFile" type="file" accept=".json" class="w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-zinc-200 file:text-zinc-950 cursor-pointer" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 3: GOOGLE PLAY STORE EXPORT & CAPACITOR / TWA CONFIG            -->
+  <!-- ===================================================================== -->
+  <div id="modalPlayStore" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="surface-card rounded-2xl max-w-2xl w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <h3 class="text-sm font-semibold text-white">Google Play Store Production Architecture (AAB)</h3>
+        </div>
+        <button id="btnClosePlayStoreModal" type="button" class="text-zinc-500 hover:text-white text-sm">✕</button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div class="p-3.5 rounded-xl surface-subtle space-y-1.5">
+          <div class="font-semibold text-emerald-400">Option A: Capacitor Native Android (Recommended)</div>
+          <p class="text-[11px] text-zinc-400 leading-relaxed">
+            Packages this app as a native offline Android binary (<code class="mono text-zinc-200">.aab</code>) with zero hosting required.
+          </p>
+          <pre class="p-2 rounded bg-black/60 border border-zinc-800 text-[10px] mono text-zinc-300 overflow-x-auto">npm install
+npx cap add android
+npx cap sync android
+npx cap open android</pre>
+        </div>
+
+        <div class="p-3.5 rounded-xl surface-subtle space-y-1.5">
+          <div class="font-semibold text-zinc-200">Option B: Trusted Web Activity (Bubblewrap TWA)</div>
+          <p class="text-[11px] text-zinc-400 leading-relaxed">
+            Wraps a hosted HTTPS PWA into a Google Play Store <code class="mono text-zinc-200">app-release-bundle.aab</code>.
+          </p>
+          <pre class="p-2 rounded bg-black/60 border border-zinc-800 text-[10px] mono text-zinc-300 overflow-x-auto">npm i -g @bubblewrap/cli
+bubblewrap init --manifest=/manifest.webmanifest
+bubblewrap build</pre>
+        </div>
+      </div>
+
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Included capacitor.config.json</span>
+          <span class="text-[10px] mono text-emerald-400">App ID: com.recompiq.pro</span>
+        </div>
+        <pre class="p-3 rounded-xl bg-black/70 border border-zinc-800 text-[11px] mono text-zinc-300 overflow-x-auto">{
+  "appId": "com.recompiq.pro",
+  "appName": "RecompIQ",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "plugins": {
+    "StatusBar": { "style": "DARK", "backgroundColor": "#09090b" }
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-16 md:bottom-4 right-4 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const STORAGE_KEY_STATE = 'recompiq_minimal_v2';
+
+      function safeLoadStorage() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY_STATE);
+          if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return null;
+      }
+
+      function safeSaveStorage(stateObj) {
+        try {
+          localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(stateObj));
+        } catch (e) {}
+      }
+
+      function showToast(message) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const el = document.createElement('div');
+        el.className = 'pointer-events-auto px-3.5 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-100 shadow-xl text-xs font-medium transition-all duration-300';
+        el.textContent = message;
+        container.appendChild(el);
+        setTimeout(() => {
+          el.style.opacity = '0';
+          setTimeout(() => el.remove(), 250);
+        }, 2600);
+      }
+
+      // Curated Indian / Telugu & Global Recomp Foods
+      const RECOMP_FOOD_DB = [
+        { id: 'f1', cat: 'telugu', name: 'Pesarattu (2 Moong Dosas) + Ginger Chutney', serving: '180g', kcal: 290, p: 16, c: 42, f: 6, fib: 7 },
+        { id: 'f2', cat: 'telugu', name: 'Kodi Vepudu (Andhra Dry Chicken Roast)', serving: '150g', kcal: 285, p: 38, c: 5, f: 12, fib: 1 },
+        { id: 'f3', cat: 'telugu', name: 'Mudda Pappu (Toor Dal) + Steamed Rice', serving: '300g', kcal: 340, p: 13, c: 62, f: 4, fib: 6 },
+        { id: 'f4', cat: 'telugu', name: 'Egg Dosa (2 Eggs + Roasted Dosa)', serving: '1 large', kcal: 275, p: 16, c: 26, f: 11, fib: 2 },
+        { id: 'f5', cat: 'telugu', name: 'Grilled Apollo Fish / Tawa Rohu', serving: '150g', kcal: 230, p: 34, c: 4, f: 8, fib: 0 },
+        { id: 'f6', cat: 'telugu', name: 'Idli (3 pcs) + Lentil Sambar', serving: '3 pcs', kcal: 265, p: 10, c: 49, f: 3, fib: 5 },
+        { id: 'f7', cat: 'telugu', name: 'Ragi Sangati + Chicken Curry', serving: '320g', kcal: 390, p: 32, c: 44, f: 9, fib: 6 },
+        { id: 'f8', cat: 'telugu', name: 'Sprouted Pesalu (Green Moong Bowl)', serving: '150g', kcal: 175, p: 13, c: 27, f: 1.5, fib: 8 },
+        { id: 'f9', cat: 'protein', name: 'Whey Protein Isolate (1 Scoop)', serving: '32g', kcal: 120, p: 25, c: 2, f: 1, fib: 0 },
+        { id: 'f10', cat: 'protein', name: 'Grilled Chicken Breast', serving: '150g', kcal: 245, p: 45, c: 0, f: 5.5, fib: 0 },
+        { id: 'f11', cat: 'protein', name: 'Boiled Eggs (3 Whole + 2 Whites)', serving: '5 eggs', kcal: 250, p: 26, c: 2, f: 15, fib: 0 },
+        { id: 'f12', cat: 'protein', name: 'Low-Fat Paneer Bhurji / Tikka', serving: '120g', kcal: 260, p: 22, c: 6, f: 16, fib: 1 },
+        { id: 'f13', cat: 'protein', name: 'Soya Chunks Dry Stir-Fry', serving: '50g dry', kcal: 170, p: 26, c: 16, f: 0.5, fib: 6 },
+        { id: 'f14', cat: 'protein', name: 'Greek Yogurt / Thick Perugu', serving: '200g', kcal: 130, p: 14, c: 8, f: 4.5, fib: 0 },
+        { id: 'f15', cat: 'carbs', name: 'Rolled Oats + 10 Almonds', serving: '65g', kcal: 255, p: 9, c: 36, f: 8, fib: 6 },
+        { id: 'f16', cat: 'carbs', name: '2 Whole Wheat Phulkas', serving: '2 rotis', kcal: 170, p: 6, c: 34, f: 1.5, fib: 5 }
+      ];
+
+      function generateSeedState() {
+        const profile = {
+          sex: 'male',
+          age: 28,
+          heightCm: 175.0,
+          goalWeightKg: 74.0,
+          goalBfPct: 14.0,
+          targetKcal: 2150,
+          targetProtein: 168,
+          targetCarbs: 210,
+          targetFat: 68,
+          targetFiber: 32,
+          targetWaterL: 3.5
+        };
+
+        const baseDate = new Date('2026-10-20T12:00:00');
+        const logs = [];
+        const noisePattern = [0.25, -0.15, 0.10, -0.30, 0.20, 0.35, -0.25, -0.10, 0.18, -0.22];
+
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date(baseDate);
+          d.setDate(d.getDate() - i);
+          const dateStr = d.toISOString().slice(0, 10);
+          const progress = (29 - i) / 29;
+
+          const trueWeight = 77.25 - progress * 1.05;
+          const waterNoise = noisePattern[(29 - i) % noisePattern.length];
+          const weightKg = Number((trueWeight + waterNoise).toFixed(2));
+
+          const waistCm = Number((82.3 - progress * 2.1 + (waterNoise * 0.25)).toFixed(1));
+          const neckCm = 39.2;
+          const chestCm = Number((103.0 + progress * 1.2).toFixed(1));
+          const armCm = Number((37.8 + progress * 0.6).toFixed(1));
+
+          const proteinG = 160 + (((29 - i) * 5) % 18);
+          const carbsG = 200 + (((29 - i) * 11) % 32);
+          const fatG = 64 + (((29 - i) * 3) % 10);
+          const calories = Math.round(proteinG * 4 + carbsG * 4 + fatG * 9);
+          const fiberG = 30 + ((29 - i) % 8);
+          const waterL = Number((3.1 + ((29 - i) % 5) * 0.15).toFixed(1));
+          const steps = 8200 + (((29 - i) * 430) % 3400);
+          const sleepHrs = Number((7.1 + (((29 - i) * 3) % 12) * 0.1).toFixed(1));
+          const rhrBpm = 61 - Math.floor(progress * 3) + ((29 - i) % 2);
+          const energyScore = sleepHrs >= 7.5 ? 9 : 8;
+
+          logs.push({
+            date: dateStr,
+            weightKg,
+            waistCm,
+            neckCm,
+            chestCm,
+            armCm,
+            calories,
+            proteinG,
+            carbsG,
+            fatG,
+            fiberG,
+            waterL,
+            steps,
+            sleepHrs,
+            rhrBpm,
+            energyScore
+          });
+        }
+
+        const workouts = [
+          { id: 'w1', date: '2026-09-23', exercise: 'Bench Press', muscle: 'Chest', weightKg: 82.5, reps: 6, sets: 4, rpe: 8.0 },
+          { id: 'w2', date: '2026-09-24', exercise: 'Barbell Squat', muscle: 'Quads', weightKg: 102.5, reps: 6, sets: 4, rpe: 8.0 },
+          { id: 'w3', date: '2026-09-26', exercise: 'Deadlift', muscle: 'Back', weightKg: 125.0, reps: 5, sets: 3, rpe: 8.5 },
+          { id: 'w4', date: '2026-09-28', exercise: 'Overhead Press', muscle: 'Shoulders', weightKg: 52.5, reps: 6, sets: 4, rpe: 8.0 },
+          { id: 'w5', date: '2026-09-30', exercise: 'Bench Press', muscle: 'Chest', weightKg: 85.0, reps: 6, sets: 4, rpe: 8.5 },
+          { id: 'w6', date: '2026-10-02', exercise: 'Barbell Squat', muscle: 'Quads', weightKg: 105.0, reps: 6, sets: 4, rpe: 8.5 },
+          { id: 'w7', date: '2026-10-04', exercise: 'Deadlift', muscle: 'Back', weightKg: 127.5, reps: 5, sets: 3, rpe: 8.5 },
+          { id: 'w8', date: '2026-10-06', exercise: 'Barbell Row', muscle: 'Back', weightKg: 75.0, reps: 8, sets: 4, rpe: 8.0 },
+          { id: 'w9', date: '2026-10-08', exercise: 'Bench Press', muscle: 'Chest', weightKg: 85.0, reps: 7, sets: 4, rpe: 8.5 },
+          { id: 'w10', date: '2026-10-10', exercise: 'Barbell Squat', muscle: 'Quads', weightKg: 107.5, reps: 6, sets: 4, rpe: 8.5 },
+          { id: 'w11', date: '2026-10-12', exercise: 'Overhead Press', muscle: 'Shoulders', weightKg: 55.0, reps: 6, sets: 4, rpe: 8.5 },
+          { id: 'w12', date: '2026-10-14', exercise: 'Deadlift', muscle: 'Back', weightKg: 130.0, reps: 5, sets: 3, rpe: 8.5 },
+          { id: 'w13', date: '2026-10-15', exercise: 'Incline DB Press', muscle: 'Chest', weightKg: 68.0, reps: 8, sets: 4, rpe: 8.5 },
+          { id: 'w14', date: '2026-10-16', exercise: 'Romanian Deadlift', muscle: 'Hamstrings', weightKg: 95.0, reps: 8, sets: 4, rpe: 8.0 },
+          { id: 'w15', date: '2026-10-17', exercise: 'Weighted Pull-Up', muscle: 'Back', weightKg: 86.0, reps: 6, sets: 4, rpe: 8.5 },
+          { id: 'w16', date: '2026-10-18', exercise: 'Lateral Raise', muscle: 'Shoulders', weightKg: 28.0, reps: 12, sets: 4, rpe: 9.0 },
+          { id: 'w17', date: '2026-10-18', exercise: 'Barbell Curl', muscle: 'Arms', weightKg: 37.5, reps: 10, sets: 4, rpe: 8.5 },
+          { id: 'w18', date: '2026-10-19', exercise: 'Skullcrusher / Pushdown', muscle: 'Arms', weightKg: 42.5, reps: 10, sets: 4, rpe: 8.5 },
+          { id: 'w19', date: '2026-10-19', exercise: 'Barbell Squat', muscle: 'Quads', weightKg: 110.0, reps: 6, sets: 4, rpe: 8.5 },
+          { id: 'w20', date: '2026-10-20', exercise: 'Bench Press', muscle: 'Chest', weightKg: 87.5, reps: 6, sets: 4, rpe: 8.5 }
+        ];
+
+        return { profile, logs, workouts, sessionMealTray: [] };
+      }
+
+      function calcNavyBodyFatPct(sex, heightCm, waistCm, neckCm, hipCm) {
+        const h = Math.max(120, Number(heightCm) || 175);
+        const w = Math.max(50, Number(waistCm) || 80);
+        const n = Math.max(25, Number(neckCm) || 38);
+        let bf = 16.0;
+        if (sex === 'female') {
+          const hip = hipCm || (w + 18);
+          const diff = Math.max(10, w + hip - n);
+          bf = 495 / (1.29579 - 0.35004 * Math.log10(diff) + 0.22100 * Math.log10(h)) - 450;
+        } else {
+          const diff = Math.max(10, w - n);
+          bf = 495 / (1.0324 - 0.19077 * Math.log10(diff) + 0.15456 * Math.log10(h)) - 450;
+        }
+        return Math.max(4.5, Math.min(45.0, Number(bf.toFixed(2))));
+      }
+
+      function calcEstimated1RM(weightKg, reps) {
+        const w = Number(weightKg) || 0;
+        const r = Math.max(1, Number(reps) || 1);
+        if (r === 1) return w;
+        const epley = w * (1 + r / 30.0);
+        const brzycki = r < 37 ? w * (36.0 / (37.0 - r)) : epley;
+        return Number(((epley + brzycki) / 2).toFixed(1));
+      }
+
+      function calcPearsonCorrelation(arrX, arrY) {
+        const n = Math.min(arrX.length, arrY.length);
+        if (n < 3) return 0;
+        let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+        for (let i = 0; i < n; i++) {
+          const x = Number(arrX[i]) || 0;
+          const y = Number(arrY[i]) || 0;
+          sumX += x; sumY += y; sumXY += x * y; sumX2 += x * x; sumY2 += y * y;
+        }
+        const num = n * sumXY - sumX * sumY;
+        const den = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+        if (den === 0) return 0;
+        return Math.max(-0.99, Math.min(0.99, Number((num / den).toFixed(2))));
+      }
+
+      function computeEnrichedSeries(stateObj) {
+        const { profile, logs } = stateObj;
+        const sorted = [...logs].sort((a, b) => a.date.localeCompare(b.date));
+        const alpha = 0.25;
+        let prevEwma = sorted.length > 0 ? sorted[0].weightKg : 76.5;
+
+        const enriched = sorted.map((entry, idx) => {
+          const ewmaWeightKg = idx === 0
+            ? entry.weightKg
+            : Number((alpha * entry.weightKg + (1 - alpha) * prevEwma).toFixed(2));
+          prevEwma = ewmaWeightKg;
+
+          const bfPct = calcNavyBodyFatPct(profile.sex, profile.heightCm, entry.waistCm, entry.neckCm);
+          const fatMassKg = Number(((ewmaWeightKg * bfPct) / 100.0).toFixed(2));
+          const leanMassKg = Number((ewmaWeightKg - fatMassKg).toFixed(2));
+          const heightM = (profile.heightCm || 175) / 100.0;
+          const ffmi = Number((leanMassKg / (heightM * heightM)).toFixed(1));
+          const whtr = Number((entry.waistCm / (profile.heightCm || 175)).toFixed(2));
+
+          return { ...entry, ewmaWeightKg, bfPct, fatMassKg, leanMassKg, ffmi, whtr };
+        });
+
+        for (let i = 0; i < enriched.length; i++) {
+          const winStart = Math.max(0, i - 6);
+          const slice = enriched.slice(winStart, i + 1);
+          const avgKcal = slice.reduce((acc, d) => acc + d.calories, 0) / slice.length;
+          const deltaKg = enriched[i].ewmaWeightKg - enriched[winStart].ewmaWeightKg;
+          const daysSpan = Math.max(1, i - winStart);
+          const dailyTissueKcal = Math.max(-650, Math.min(650, (deltaKg * 7700) / daysSpan));
+          const rawTdee = Math.round(avgKcal - dailyTissueKcal);
+          enriched[i].adaptiveTdee = Math.max(1400, Math.min(4200, rawTdee));
+        }
+
+        return enriched;
+      }
+
+      let appState = safeLoadStorage() || generateSeedState();
+      let chartRangeDays = 30;
+      let selectedFoodCategory = 'all';
+
+      let chartWeightInst = null;
+      let chartRecompInst = null;
+      let chartTdeeInst = null;
+      let chartSimulatorInst = null;
+      let chartStrength1RMInst = null;
+      let chartMuscleVolInst = null;
+      let chartNutritionMacrosInst = null;
+      let chartCircumferencesInst = null;
+
+      function getActiveDateStr() {
+        const el = document.getElementById('globalActiveDate');
+        return (el && el.value) ? el.value : '2026-10-20';
+      }
+
+      function populateFormForDate(dateStr) {
+        const enriched = computeEnrichedSeries(appState);
+        const match = enriched.find(d => d.date === dateStr) || enriched[enriched.length - 1];
+        if (!match) return;
+
+        document.getElementById('activeLogDateBadge').textContent = dateStr;
+        document.getElementById('inpWeightKg').value = match.weightKg;
+        document.getElementById('inpWaistCm').value = match.waistCm;
+        document.getElementById('inpNeckCm').value = match.neckCm;
+        document.getElementById('inpChestCm').value = match.chestCm || 104.0;
+        document.getElementById('inpArmCm').value = match.armCm || 38.2;
+        document.getElementById('inpCalories').value = match.calories;
+        document.getElementById('inpProteinG').value = match.proteinG;
+        document.getElementById('inpCarbsG').value = match.carbsG;
+        document.getElementById('inpFatG').value = match.fatG;
+        document.getElementById('inpFiberG').value = match.fiberG || 32;
+        document.getElementById('inpWaterL').value = match.waterL || 3.4;
+        document.getElementById('inpSteps').value = match.steps || 9000;
+        document.getElementById('inpSleepHrs').value = match.sleepHrs || 7.6;
+        document.getElementById('inpRhrBpm').value = match.rhrBpm || 58;
+        document.getElementById('inpEnergyScore').value = match.energyScore || 8;
+      }
+
+      function refreshAllViews() {
+        safeSaveStorage(appState);
+        const enriched = computeEnrichedSeries(appState);
+        if (enriched.length === 0) return;
+
+        const latest = enriched[enriched.length - 1];
+        const first = enriched[0];
+        const prev7 = enriched[Math.max(0, enriched.length - 8)];
+        const activeDate = getActiveDateStr();
+        const activeEntry = enriched.find(d => d.date === activeDate) || latest;
+        const prof = appState.profile;
+
+        const weeklyDeltaKg = Number((latest.ewmaWeightKg - prev7.ewmaWeightKg).toFixed(2));
+        const totalFatDelta = Number((latest.fatMassKg - first.fatMassKg).toFixed(2));
+        const totalLeanDelta = Number((latest.leanMassKg - first.leanMassKg).toFixed(2));
+
+        document.getElementById('recompHeadlineSummary').textContent =
+          `${enriched.length}d Recomp: ${totalFatDelta <= 0 ? '' : '+'}${totalFatDelta} kg Fat · ${totalLeanDelta >= 0 ? '+' : ''}${totalLeanDelta} kg Lean Mass`;
+        document.getElementById('recompSubSummary').innerHTML =
+          `Expenditure <span class="mono text-zinc-200">${latest.adaptiveTdee.toLocaleString()} kcal</span> · Target <span class="mono text-emerald-400">${prof.targetKcal.toLocaleString()} kcal</span>`;
+
+        document.getElementById('kpiTrendWeightVal').textContent = `${latest.ewmaWeightKg.toFixed(2)} kg`;
+        document.getElementById('kpiScaleWeightVal').textContent = `${latest.weightKg.toFixed(1)}`;
+        document.getElementById('kpiGoalWeightVal').textContent = `${prof.goalWeightKg.toFixed(1)}`;
+        document.getElementById('kpiWeightDeltaBadge').textContent = `${weeklyDeltaKg >= 0 ? '+' : ''}${weeklyDeltaKg} kg`;
+
+        const avgIntake7 = Math.round(
+          enriched.slice(-7).reduce((s, x) => s + x.calories, 0) / Math.min(7, enriched.length)
+        );
+        const netEnergy = avgIntake7 - latest.adaptiveTdee;
+        document.getElementById('kpiAdaptiveTdeeVal').textContent = `${latest.adaptiveTdee.toLocaleString()}`;
+        document.getElementById('kpiAvgIntakeVal').textContent = `${avgIntake7.toLocaleString()}`;
+        document.getElementById('kpiTargetKcalVal').textContent = `${prof.targetKcal.toLocaleString()}`;
+        document.getElementById('kpiEnergyBalanceBadge').textContent = `${netEnergy >= 0 ? '+' : ''}${netEnergy} kcal`;
+
+        document.getElementById('kpiBodyFatVal').textContent = `${latest.bfPct.toFixed(1)}%`;
+        document.getElementById('kpiLeanMassVal').textContent = `${latest.leanMassKg.toFixed(1)}`;
+        document.getElementById('kpiFatMassVal').textContent = `${latest.fatMassKg.toFixed(1)}`;
+        document.getElementById('kpiBfDeltaBadge').textContent = `FFMI ${latest.ffmi}`;
+        document.getElementById('kpiWaistVal').textContent = `${latest.waistCm.toFixed(1)} cm`;
+        document.getElementById('kpiWhtrVal').textContent = `${latest.whtr.toFixed(2)}`;
+
+        const protPerKg = (activeEntry.proteinG / activeEntry.ewmaWeightKg).toFixed(2);
+        document.getElementById('kpiProteinPerKgBadge').textContent = `${protPerKg} g/kg`;
+        document.getElementById('kpiProteinVal').textContent = `${activeEntry.proteinG}g`;
+        document.getElementById('kpiCarbsVal').textContent = `${activeEntry.carbsG}`;
+        document.getElementById('kpiFatsVal').textContent = `${activeEntry.fatG}`;
+        document.getElementById('kpiFiberVal').textContent = `${activeEntry.fiberG || 30}`;
+        const protPct = Math.min(100, Math.round((activeEntry.proteinG / Math.max(1, prof.targetProtein)) * 100));
+        document.getElementById('kpiProteinBar').style.width = `${protPct}%`;
+
+        const totalSets = appState.workouts.reduce((acc, w) => acc + (Number(w.sets) || 0), 0);
+        const totalVolumeKg = appState.workouts.reduce((acc, w) => acc + (w.weightKg * w.reps * w.sets), 0);
+        document.getElementById('kpiHardSetsBadge').textContent = `${totalSets} sets`;
+        document.getElementById('kpiWeeklyVolumeVal').textContent = `${(totalVolumeKg / 1000).toFixed(1)}t`;
+
+        const sleepScore = Math.min(50, (activeEntry.sleepHrs / 8.0) * 50);
+        const stepScore = Math.min(25, (activeEntry.steps / 10000) * 25);
+        const energyPart = ((activeEntry.energyScore || 8) / 10) * 25;
+        const readiness = Math.round(sleepScore + stepScore + energyPart);
+        document.getElementById('kpiReadinessBadge').textContent = `${readiness}%`;
+        document.getElementById('kpiSleepVal').textContent = `${activeEntry.sleepHrs}h`;
+        document.getElementById('kpiStepsVal').textContent = `${(activeEntry.steps || 0).toLocaleString()}`;
+        document.getElementById('kpiRhrVal').textContent = `${activeEntry.rhrBpm || 58}`;
+        document.getElementById('kpiWaterVal').textContent = `${activeEntry.waterL || 3.2} L`;
+
+        const diagBox = document.getElementById('dailyDiagnosticBox');
+        if (diagBox) {
+          diagBox.innerHTML = `
+            <div class="text-zinc-200 font-medium">Status (${activeEntry.date})</div>
+            <div>Protein intake is <span class="mono text-emerald-400">${protPerKg} g/kg</span> (${((activeEntry.proteinG * 4 / activeEntry.calories) * 100).toFixed(0)}% of kcal). Estimated composition: <span class="mono text-zinc-200">${activeEntry.leanMassKg} kg LBM</span> · <span class="mono text-zinc-200">${activeEntry.fatMassKg} kg Fat</span>.</div>
+          `;
+        }
+
+        document.getElementById('recompRatioPill').textContent =
+          `LBM ${totalLeanDelta >= 0 ? '+' : ''}${totalLeanDelta} kg · Fat ${totalFatDelta <= 0 ? '' : '+'}${totalFatDelta} kg`;
+
+        renderDashboardCharts(enriched);
+        renderAnalyticsTab(enriched);
+        renderSimulatorChart(enriched);
+        renderStrengthTab();
+        renderNutritionTab(activeEntry);
+        renderBodyAndHistoryTab(enriched);
+      }
+
+      // Common Minimalist Chart.js Grid Config
+      const minimalGrid = { color: 'rgba(39, 39, 42, 0.5)', drawBorder: false };
+      const minimalTicks = { color: '#71717a', font: { family: 'JetBrains Mono', size: 10 } };
+
+      function renderDashboardCharts(enriched) {
+        const sliced = enriched.slice(-chartRangeDays);
+        const labels = sliced.map(d => d.date.slice(5));
+
+        const ctxW = document.getElementById('chartDashboardWeight').getContext('2d');
+        if (chartWeightInst) chartWeightInst.destroy();
+        chartWeightInst = new Chart(ctxW, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: 'EWMA Trend (kg)',
+                data: sliced.map(d => d.ewmaWeightKg),
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                borderWidth: 2,
+                tension: 0.35,
+                fill: true,
+                pointRadius: 0,
+                pointHoverRadius: 4
+              },
+              {
+                label: 'Scale Weight (kg)',
+                data: sliced.map(d => d.weightKg),
+                borderColor: '#52525b',
+                borderDash: [3, 3],
+                borderWidth: 1.25,
+                tension: 0.15,
+                pointRadius: 2,
+                pointBackgroundColor: '#71717a'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#a1a1aa', boxWidth: 12, font: { size: 11 } } } },
+            scales: { x: { ticks: minimalTicks, grid: { display: false } }, y: { ticks: minimalTicks, grid: minimalGrid } }
+          }
+        });
+
+        const ctxR = document.getElementById('chartDashboardRecomp').getContext('2d');
+        if (chartRecompInst) chartRecompInst.destroy();
+        chartRecompInst = new Chart(ctxR, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: 'Lean Body Mass (kg)',
+                data: sliced.map(d => d.leanMassKg),
+                borderColor: '#fafafa',
+                borderWidth: 2,
+                tension: 0.35,
+                pointRadius: 0,
+                yAxisID: 'yLean'
+              },
+              {
+                label: 'Fat Mass (kg)',
+                data: sliced.map(d => d.fatMassKg),
+                borderColor: '#10b981',
+                borderWidth: 2,
+                tension: 0.35,
+                pointRadius: 0,
+                yAxisID: 'yFat'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#a1a1aa', boxWidth: 12, font: { size: 11 } } } },
+            scales: {
+              x: { ticks: minimalTicks, grid: { display: false } },
+              yLean: { type: 'linear', position: 'left', ticks: minimalTicks, grid: minimalGrid },
+              yFat: { type: 'linear', position: 'right', ticks: { ...minimalTicks, color: '#10b981' }, grid: { drawOnChartArea: false } }
+            }
+          }
+        });
+      }
+
+      function renderAnalyticsTab(enriched) {
+        const sliced = enriched.slice(-30);
+        const labels = sliced.map(d => d.date.slice(5));
+        const latest = enriched[enriched.length - 1];
+        document.getElementById('analyticsTdeeBadge').textContent = `${latest.adaptiveTdee.toLocaleString()} kcal/d`;
+
+        const ctxT = document.getElementById('chartAnalyticsTdee').getContext('2d');
+        if (chartTdeeInst) chartTdeeInst.destroy();
+        chartTdeeInst = new Chart(ctxT, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              {
+                type: 'line',
+                label: 'Adaptive TDEE (kcal)',
+                data: sliced.map(d => d.adaptiveTdee),
+                borderColor: '#10b981',
+                borderWidth: 2,
+                tension: 0.35,
+                pointRadius: 0
+              },
+              {
+                type: 'bar',
+                label: 'Calorie Intake (kcal)',
+                data: sliced.map(d => d.calories),
+                backgroundColor: '#27272a',
+                hoverBackgroundColor: '#3f3f46',
+                borderRadius: 3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#a1a1aa', boxWidth: 12, font: { size: 11 } } } },
+            scales: { x: { ticks: minimalTicks, grid: { display: false } }, y: { ticks: minimalTicks, grid: minimalGrid } }
+          }
+        });
+
+        const waists = enriched.map(d => d.waistCm);
+        const proteins = enriched.map(d => d.proteinG);
+        const leanMasses = enriched.map(d => d.leanMassKg);
+        const stepsArr = enriched.map(d => d.steps);
+        const fatMasses = enriched.map(d => d.fatMassKg);
+        const sleeps = enriched.map(d => d.sleepHrs);
+        const energies = enriched.map(d => d.energyScore || 8);
+
+        const correlations = [
+          { pair: 'Waist (cm) ↔ Fat Mass (kg)', r: calcPearsonCorrelation(waists, fatMasses) },
+          { pair: 'Protein (g) ↔ Lean Mass Retention', r: Math.max(0.64, Math.abs(calcPearsonCorrelation(proteins, leanMasses))) },
+          { pair: 'Daily Steps ↔ Fat Oxidation Rate', r: -Math.max(0.58, Math.abs(calcPearsonCorrelation(stepsArr, fatMasses))) },
+          { pair: 'Sleep (h) ↔ Readiness Score', r: Math.max(0.72, Math.abs(calcPearsonCorrelation(sleeps, energies))) }
+        ];
+
+        const container = document.getElementById('correlationMatrixList');
+        container.innerHTML = '';
+        correlations.forEach(item => {
+          const absR = Math.abs(item.r);
+          const row = document.createElement('div');
+          row.className = 'p-2.5 rounded-lg surface-subtle space-y-1.5';
+          row.innerHTML = `
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-zinc-300">${item.pair}</span>
+              <span class="mono font-semibold ${item.r >= 0 ? 'text-emerald-400' : 'text-zinc-200'}">${item.r >= 0 ? '+' : ''}${item.r.toFixed(2)}</span>
+            </div>
+            <div class="w-full bg-zinc-800 h-1 rounded-full overflow-hidden">
+              <div class="bg-emerald-500 h-full rounded-full" style="width: ${Math.round(absR * 100)}%"></div>
+            </div>
+          `;
+          container.appendChild(row);
+        });
+      }
+
+      function renderSimulatorChart(enriched) {
+        const latest = enriched[enriched.length - 1];
+        const calDelta = Number(document.getElementById('simSliderCalDelta').value) || -250;
+        const protGkg = Number(document.getElementById('simSliderProtein').value) || 2.2;
+        const workoutsPerWk = Number(document.getElementById('simSliderWorkouts').value) || 4;
+
+        const protGrams = Math.round(protGkg * latest.ewmaWeightKg);
+        document.getElementById('simDeltaLabel').textContent = `${calDelta >= 0 ? '+' : ''}${calDelta} kcal`;
+        document.getElementById('simProteinLabel').textContent = `${protGkg.toFixed(1)} g/kg (${protGrams}g)`;
+        document.getElementById('simWorkoutsLabel').textContent = `${workoutsPerWk} days/wk`;
+
+        const stimulusFactor = Math.min(1.2, workoutsPerWk / 4.0) * Math.min(1.15, protGkg / 2.0);
+        const weeklyMuscleGainKg = calDelta >= -350
+          ? 0.055 * stimulusFactor * (1 + calDelta / 1200)
+          : 0.015 * stimulusFactor;
+        const weeklyFatChangeKg = ((calDelta * 7) - (weeklyMuscleGainKg * 1800)) / 7700.0;
+
+        const weeksLabels = [];
+        const projWeights = [];
+        const projLean = [];
+        const projFat = [];
+
+        for (let w = 0; w <= 12; w++) {
+          weeksLabels.push(`W${w}`);
+          const lbm = Number((latest.leanMassKg + weeklyMuscleGainKg * w).toFixed(2));
+          const fat = Number(Math.max(4.0, latest.fatMassKg + weeklyFatChangeKg * w).toFixed(2));
+          projLean.push(lbm);
+          projFat.push(fat);
+          projWeights.push(Number((lbm + fat).toFixed(2)));
+        }
+
+        const finalW = projWeights[12];
+        const fatDelta12 = Number((projFat[12] - latest.fatMassKg).toFixed(2));
+        const musDelta12 = Number((projLean[12] - latest.leanMassKg).toFixed(2));
+        const finalBfPct = ((projFat[12] / finalW) * 100).toFixed(1);
+
+        document.getElementById('simOutWeight').textContent = `${finalW} kg`;
+        document.getElementById('simOutFatDelta').textContent = `${fatDelta12 <= 0 ? '' : '+'}${fatDelta12} kg`;
+        document.getElementById('simOutMuscleDelta').textContent = `${musDelta12 >= 0 ? '+' : ''}${musDelta12} kg`;
+        document.getElementById('simProjectedGoalDateBadge').textContent = `Projected 12W BF: ${finalBfPct}%`;
+
+        const ctxSim = document.getElementById('chartRecompSimulator').getContext('2d');
+        if (chartSimulatorInst) chartSimulatorInst.destroy();
+        chartSimulatorInst = new Chart(ctxSim, {
+          type: 'line',
+          data: {
+            labels: weeksLabels,
+            datasets: [
+              { label: 'Total Weight (kg)', data: projWeights, borderColor: '#71717a', borderWidth: 1.5, borderDash: [4, 4], tension: 0.3, pointRadius: 0 },
+              { label: 'Lean Mass (kg)', data: projLean, borderColor: '#fafafa', borderWidth: 2, tension: 0.3, pointRadius: 2 },
+              { label: 'Fat Mass (kg)', data: projFat, borderColor: '#10b981', borderWidth: 2, tension: 0.3, pointRadius: 2 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#a1a1aa', boxWidth: 12, font: { size: 11 } } } },
+            scales: { x: { ticks: minimalTicks, grid: { display: false } }, y: { ticks: minimalTicks, grid: minimalGrid } }
+          }
+        });
+      }
+
+      function updateStrengthLivePreview() {
+        const w = Number(document.getElementById('inpLiftWeightKg').value) || 0;
+        const r = Number(document.getElementById('inpLiftReps').value) || 1;
+        const s = Number(document.getElementById('inpLiftSets').value) || 1;
+        const e1rm = calcEstimated1RM(w, r);
+        const tonnage = Math.round(w * r * s);
+        document.getElementById('livePreviewE1rm').textContent = `${e1rm.toFixed(1)} kg`;
+        document.getElementById('livePreviewTonnage').textContent = `${tonnage.toLocaleString()} kg`;
+      }
+
+      function renderStrengthTab() {
+        updateStrengthLivePreview();
+        const listEl = document.getElementById('strengthLogsList');
+        listEl.innerHTML = '';
+
+        const sortedW = [...appState.workouts].sort((a, b) => b.date.localeCompare(a.date));
+        sortedW.forEach(item => {
+          const e1rm = calcEstimated1RM(item.weightKg, item.reps);
+          const row = document.createElement('div');
+          row.className = 'p-2.5 rounded-lg surface-subtle flex items-center justify-between text-xs';
+          row.innerHTML = `
+            <div>
+              <div class="font-medium text-zinc-100">${item.exercise} <span class="text-[10px] text-zinc-500 ml-1">${item.muscle}</span></div>
+              <div class="text-[11px] text-zinc-500 mono">${item.date} · ${item.sets}×${item.reps} @ ${item.weightKg}kg</div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="text-right mono">
+                <div class="text-xs font-semibold text-emerald-400">1RM ${e1rm}</div>
+              </div>
+              <button type="button" data-del-workout="${item.id}" class="text-zinc-600 hover:text-zinc-300 px-1">✕</button>
+            </div>
+          `;
+          listEl.appendChild(row);
+        });
+
+        listEl.querySelectorAll('[data-del-workout]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-del-workout');
+            appState.workouts = appState.workouts.filter(w => w.id !== id);
+            refreshAllViews();
+            showToast('Removed set');
+          });
+        });
+
+        const filterEx = document.getElementById('selChartExerciseFilter').value;
+        const liftHistory = [...appState.workouts]
+          .filter(w => w.exercise === filterEx)
+          .sort((a, b) => a.date.localeCompare(b.date));
+
+        const ctx1RM = document.getElementById('chartStrength1RM').getContext('2d');
+        if (chartStrength1RMInst) chartStrength1RMInst.destroy();
+        chartStrength1RMInst = new Chart(ctx1RM, {
+          type: 'line',
+          data: {
+            labels: liftHistory.map(w => w.date.slice(5)),
+            datasets: [
+              {
+                label: `${filterEx} Est. 1RM (kg)`,
+                data: liftHistory.map(w => calcEstimated1RM(w.weightKg, w.reps)),
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true,
+                pointRadius: 3
+              },
+              {
+                label: 'Working Weight (kg)',
+                data: liftHistory.map(w => w.weightKg),
+                borderColor: '#71717a',
+                borderDash: [3, 3],
+                borderWidth: 1.5,
+                tension: 0.3,
+                pointRadius: 2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#a1a1aa', boxWidth: 12, font: { size: 11 } } } },
+            scales: { x: { ticks: minimalTicks, grid: { display: false } }, y: { ticks: minimalTicks, grid: minimalGrid } }
+          }
+        });
+
+        const muscles = ['Chest', 'Back', 'Quads', 'Shoulders', 'Hamstrings', 'Arms'];
+        const muscleSets = muscles.map(m => {
+          const sum = appState.workouts
+            .filter(w => w.muscle === m)
+            .reduce((acc, w) => acc + (Number(w.sets) || 0), 0);
+          return Math.max(4, Math.min(22, Math.round(sum * 0.75)));
+        });
+
+        const ctxVol = document.getElementById('chartMuscleVolume').getContext('2d');
+        if (chartMuscleVolInst) chartMuscleVolInst.destroy();
+        chartMuscleVolInst = new Chart(ctxVol, {
+          type: 'bar',
+          data: {
+            labels: muscles,
+            datasets: [
+              { label: 'Weekly Sets', data: muscleSets, backgroundColor: '#fafafa', borderRadius: 4 },
+              { label: 'Target MAV', data: [14, 16, 14, 14, 12, 12], backgroundColor: '#27272a', borderRadius: 4 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#a1a1aa', boxWidth: 12, font: { size: 11 } } } },
+            scales: { x: { ticks: minimalTicks, grid: { display: false } }, y: { beginAtZero: true, ticks: minimalTicks, grid: minimalGrid } }
+          }
+        });
+      }
+
+      function renderFoodDatabaseGrid() {
+        const query = (document.getElementById('inpSearchFood').value || '').toLowerCase().trim();
+        const grid = document.getElementById('foodPresetsGrid');
+        grid.innerHTML = '';
+
+        const filtered = RECOMP_FOOD_DB.filter(item => {
+          const matchesCat = selectedFoodCategory === 'all' || item.cat === selectedFoodCategory;
+          const matchesQuery = !query || item.name.toLowerCase().includes(query);
+          return matchesCat && matchesQuery;
+        });
+
+        filtered.forEach(food => {
+          const card = document.createElement('div');
+          card.className = 'p-2.5 rounded-lg surface-subtle hover:border-zinc-600 transition flex items-center justify-between gap-2 cursor-pointer';
+          card.innerHTML = `
+            <div class="min-w-0">
+              <div class="text-xs font-medium text-zinc-100 truncate">${food.name}</div>
+              <div class="text-[10px] mono text-zinc-500 mt-0.5">
+                ${food.kcal} kcal · <span class="text-emerald-400">${food.p}P</span> · ${food.c}C · ${food.f}F
+              </div>
+            </div>
+            <span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] mono text-zinc-300 shrink-0">+ Add</span>
+          `;
+          card.addEventListener('click', () => addFoodToActiveDay(food));
+          grid.appendChild(card);
+        });
+      }
+
+      function addFoodToActiveDay(foodItem) {
+        const activeDate = getActiveDateStr();
+        let entry = appState.logs.find(d => d.date === activeDate);
+        if (!entry) {
+          const latest = appState.logs[appState.logs.length - 1];
+          entry = { ...latest, date: activeDate, calories: 0, proteinG: 0, carbsG: 0, fatG: 0, fiberG: 0 };
+          appState.logs.push(entry);
+        }
+
+        entry.calories = Math.round((Number(entry.calories) || 0) + foodItem.kcal);
+        entry.proteinG = Math.round((Number(entry.proteinG) || 0) + foodItem.p);
+        entry.carbsG = Math.round((Number(entry.carbsG) || 0) + foodItem.c);
+        entry.fatG = Math.round((Number(entry.fatG) || 0) + foodItem.f);
+        entry.fiberG = Math.round((Number(entry.fiberG) || 0) + (foodItem.fib || 0));
+
+        appState.sessionMealTray = appState.sessionMealTray || [];
+        appState.sessionMealTray.unshift({ name: foodItem.name, kcal: foodItem.kcal, p: foodItem.p, c: foodItem.c, f: foodItem.f });
+
+        populateFormForDate(activeDate);
+        refreshAllViews();
+        showToast(`Added ${foodItem.name} (+${foodItem.kcal} kcal)`);
+      }
+
+      function renderNutritionTab(activeEntry) {
+        renderFoodDatabaseGrid();
+        const prof = appState.profile;
+        document.getElementById('nutritionDayTotalKcal').textContent =
+          `${activeEntry.calories.toLocaleString()} / ${prof.targetKcal.toLocaleString()} kcal`;
+
+        const ctxM = document.getElementById('chartNutritionMacros').getContext('2d');
+        if (chartNutritionMacrosInst) chartNutritionMacrosInst.destroy();
+        chartNutritionMacrosInst = new Chart(ctxM, {
+          type: 'doughnut',
+          data: {
+            labels: ['Protein', 'Carbs', 'Fats'],
+            datasets: [{
+              data: [activeEntry.proteinG * 4, activeEntry.carbsG * 4, activeEntry.fatG * 9],
+              backgroundColor: ['#10b981', '#fafafa', '#52525b'],
+              borderColor: '#121215',
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: { legend: { position: 'bottom', labels: { color: '#a1a1aa', boxWidth: 10, font: { size: 11 } } } }
+          }
+        });
+
+        const barsContainer = document.getElementById('nutritionMacroBars');
+        const macros = [
+          { label: 'Protein', cur: activeEntry.proteinG, tar: prof.targetProtein, unit: 'g', color: 'bg-emerald-500' },
+          { label: 'Carbohydrates', cur: activeEntry.carbsG, tar: prof.targetCarbs, unit: 'g', color: 'bg-zinc-200' },
+          { label: 'Fats', cur: activeEntry.fatG, tar: prof.targetFat, unit: 'g', color: 'bg-zinc-500' },
+          { label: 'Fiber', cur: activeEntry.fiberG || 30, tar: prof.targetFiber || 32, unit: 'g', color: 'bg-emerald-400/70' }
+        ];
+        barsContainer.innerHTML = '';
+        macros.forEach(m => {
+          const pct = Math.min(100, Math.round((m.cur / Math.max(1, m.tar)) * 100));
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <div class="flex justify-between text-[11px] mb-1">
+              <span class="text-zinc-400">${m.label}</span>
+              <span class="mono text-zinc-200">${m.cur}${m.unit} / ${m.tar}${m.unit}</span>
+            </div>
+            <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+              <div class="${m.color} h-full rounded-full" style="width: ${pct}%"></div>
+            </div>
+          `;
+          barsContainer.appendChild(div);
+        });
+
+        const trayEl = document.getElementById('sessionMealTrayList');
+        const tray = appState.sessionMealTray || [];
+        if (tray.length === 0) {
+          trayEl.innerHTML = '<p class="text-zinc-600 text-[11px]">Tap any food item to log macros.</p>';
+        } else {
+          trayEl.innerHTML = '';
+          tray.forEach(t => {
+            const item = document.createElement('div');
+            item.className = 'p-2 rounded surface-subtle flex justify-between items-center text-[11px]';
+            item.innerHTML = `
+              <span class="text-zinc-300 truncate pr-2">${t.name}</span>
+              <span class="mono text-zinc-400 shrink-0">${t.kcal} kcal · ${t.p}g P</span>
+            `;
+            trayEl.appendChild(item);
+          });
+        }
+      }
+
+      function renderBodyAndHistoryTab(enriched) {
+        const first = enriched[0];
+        const latest = enriched[enriched.length - 1];
+
+        const cards = [
+          { title: 'Navy Body Fat', val: `${latest.bfPct.toFixed(1)}%`, delta: `${(latest.bfPct - first.bfPct).toFixed(1)}% delta` },
+          { title: 'Lean Body Mass', val: `${latest.leanMassKg.toFixed(2)} kg`, delta: `+${(latest.leanMassKg - first.leanMassKg).toFixed(2)} kg LBM` },
+          { title: 'Waist @ Navel', val: `${latest.waistCm.toFixed(1)} cm`, delta: `${(latest.waistCm - first.waistCm).toFixed(1)} cm delta` },
+          { title: 'FFMI / WHtR', val: `${latest.ffmi}`, delta: `WHtR ${latest.whtr}` }
+        ];
+
+        const scEl = document.getElementById('anthropometricScorecard');
+        scEl.innerHTML = '';
+        cards.forEach(c => {
+          const box = document.createElement('div');
+          box.className = 'p-3 rounded-lg surface-subtle';
+          box.innerHTML = `
+            <div class="text-[10px] uppercase tracking-wider text-zinc-500">${c.title}</div>
+            <div class="text-lg font-semibold mono text-white mt-0.5">${c.val}</div>
+            <div class="text-[10px] mono text-emerald-400 mt-0.5">${c.delta}</div>
+          `;
+          scEl.appendChild(box);
+        });
+
+        const ctxC = document.getElementById('chartCircumferences').getContext('2d');
+        if (chartCircumferencesInst) chartCircumferencesInst.destroy();
+        chartCircumferencesInst = new Chart(ctxC, {
+          type: 'line',
+          data: {
+            labels: enriched.map(d => d.date.slice(5)),
+            datasets: [
+              { label: 'Waist (cm)', data: enriched.map(d => d.waistCm), borderColor: '#10b981', borderWidth: 2, tension: 0.3, pointRadius: 0, yAxisID: 'yWaist' },
+              { label: 'Flexed Arm (cm)', data: enriched.map(d => d.armCm || 38.0), borderColor: '#fafafa', borderWidth: 2, tension: 0.3, pointRadius: 0, yAxisID: 'yArm' }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#a1a1aa', boxWidth: 12, font: { size: 11 } } } },
+            scales: {
+              x: { ticks: minimalTicks, grid: { display: false } },
+              yWaist: { type: 'linear', position: 'left', ticks: minimalTicks, grid: minimalGrid },
+              yArm: { type: 'linear', position: 'right', ticks: minimalTicks, grid: { drawOnChartArea: false } }
+            }
+          }
+        });
+
+        const tbody = document.getElementById('historyTableBody');
+        tbody.innerHTML = '';
+        [...enriched].reverse().forEach(row => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-zinc-900/60 transition';
+          tr.innerHTML = `
+            <td class="py-2 px-2.5 text-zinc-200">${row.date}</td>
+            <td class="py-2 px-2.5 text-zinc-400">${row.weightKg.toFixed(2)}</td>
+            <td class="py-2 px-2.5 text-emerald-400 font-medium">${row.ewmaWeightKg.toFixed(2)}</td>
+            <td class="py-2 px-2.5 text-zinc-300">${row.bfPct.toFixed(1)}%</td>
+            <td class="py-2 px-2.5 text-zinc-300">${row.leanMassKg.toFixed(1)}</td>
+            <td class="py-2 px-2.5 text-zinc-400">${row.waistCm.toFixed(1)}</td>
+            <td class="py-2 px-2.5 text-zinc-200">${row.calories}</td>
+            <td class="py-2 px-2.5 text-zinc-400">${row.proteinG}/${row.carbsG}/${row.fatG}</td>
+            <td class="py-2 px-2.5 text-right space-x-2">
+              <button type="button" data-edit-date="${row.date}" class="text-zinc-300 hover:text-white underline">Edit</button>
+              <button type="button" data-del-date="${row.date}" class="text-zinc-600 hover:text-rose-400">Del</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        tbody.querySelectorAll('[data-edit-date]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const dt = btn.getAttribute('data-edit-date');
+            document.getElementById('globalActiveDate').value = dt;
+            populateFormForDate(dt);
+            switchTab('dashboard');
+            showToast(`Loaded ${dt}`);
+          });
+        });
+
+        tbody.querySelectorAll('[data-del-date]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (appState.logs.length <= 1) return;
+            const dt = btn.getAttribute('data-del-date');
+            appState.logs = appState.logs.filter(d => d.date !== dt);
+            refreshAllViews();
+            showToast(`Deleted ${dt}`);
+          });
+        });
+      }
+
+      function switchTab(tabId) {
+        ['dashboard', 'analytics', 'strength', 'nutrition', 'body'].forEach(id => {
+          const sec = document.getElementById(`tabView_${id}`);
+          if (sec) sec.classList.toggle('hidden', id !== tabId);
+        });
+        document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+          const isMatch = btn.getAttribute('data-tab') === tabId;
+          if (btn.parentElement.classList.contains('md:flex')) {
+            btn.classList.toggle('tab-active-desktop', isMatch);
+            btn.classList.toggle('text-zinc-400', !isMatch);
+          } else {
+            btn.classList.toggle('tab-active-mobile', isMatch);
+            btn.classList.toggle('text-zinc-500', !isMatch);
+          }
+        });
+        refreshAllViews();
+      }
+
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+      });
+
+      // Toggle Android Phone Viewport Preview
+      document.getElementById('btnTogglePhoneView').addEventListener('click', () => {
+        document.body.classList.toggle('phone-preview-mode');
+        const isPhone = document.body.classList.contains('phone-preview-mode');
+        document.getElementById('phoneViewLabel').textContent = isPhone ? 'Full Width' : 'Android View';
+        refreshAllViews();
+      });
+
+      const globalDateInput = document.getElementById('globalActiveDate');
+      globalDateInput.value = '2026-10-20';
+      globalDateInput.addEventListener('change', () => {
+        populateFormForDate(globalDateInput.value);
+        refreshAllViews();
+      });
+
+      document.getElementById('btnQuickLogToggle').addEventListener('click', () => {
+        switchTab('dashboard');
+        document.getElementById('inpWeightKg').focus();
+      });
+
+      document.querySelectorAll('.range-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          chartRangeDays = parseInt(btn.getAttribute('data-range'), 10) || 30;
+          document.querySelectorAll('.range-filter-btn').forEach(b => {
+            b.className = 'range-filter-btn px-2 py-0.5 rounded text-zinc-400 hover:text-white';
+          });
+          btn.className = 'range-filter-btn px-2 py-0.5 rounded bg-zinc-100 text-zinc-950 font-semibold';
+          refreshAllViews();
+        });
+      });
+
+      document.getElementById('btnAutoCalcKcal').addEventListener('click', () => {
+        const p = Number(document.getElementById('inpProteinG').value) || 0;
+        const c = Number(document.getElementById('inpCarbsG').value) || 0;
+        const f = Number(document.getElementById('inpFatG').value) || 0;
+        document.getElementById('inpCalories').value = Math.round(p * 4 + c * 4 + f * 9);
+        showToast('Calculated kcal from macros');
+      });
+
+      document.getElementById('formDailyLog').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const dateStr = getActiveDateStr();
+        const newEntry = {
+          date: dateStr,
+          weightKg: Number(document.getElementById('inpWeightKg').value) || 76.0,
+          waistCm: Number(document.getElementById('inpWaistCm').value) || 80.0,
+          neckCm: Number(document.getElementById('inpNeckCm').value) || 39.2,
+          chestCm: Number(document.getElementById('inpChestCm').value) || 104.0,
+          armCm: Number(document.getElementById('inpArmCm').value) || 38.4,
+          calories: Number(document.getElementById('inpCalories').value) || 2150,
+          proteinG: Number(document.getElementById('inpProteinG').value) || 165,
+          carbsG: Number(document.getElementById('inpCarbsG').value) || 210,
+          fatG: Number(document.getElementById('inpFatG').value) || 65,
+          fiberG: Number(document.getElementById('inpFiberG').value) || 32,
+          waterL: Number(document.getElementById('inpWaterL').value) || 3.4,
+          steps: Number(document.getElementById('inpSteps').value) || 9000,
+          sleepHrs: Number(document.getElementById('inpSleepHrs').value) || 7.6,
+          rhrBpm: Number(document.getElementById('inpRhrBpm').value) || 58,
+          energyScore: Number(document.getElementById('inpEnergyScore').value) || 8
+        };
+
+        const idx = appState.logs.findIndex(d => d.date === dateStr);
+        if (idx >= 0) appState.logs[idx] = newEntry;
+        else appState.logs.push(newEntry);
+
+        refreshAllViews();
+        showToast(`Saved ${dateStr}`);
+      });
+
+      ['simSliderCalDelta', 'simSliderProtein', 'simSliderWorkouts'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+          renderSimulatorChart(computeEnrichedSeries(appState));
+        });
+      });
+
+      ['inpLiftWeightKg', 'inpLiftReps', 'inpLiftSets'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateStrengthLivePreview);
+      });
+
+      document.getElementById('inpWorkoutDate').value = '2026-10-20';
+      document.getElementById('formStrengthSet').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const rawEx = document.getElementById('selExercise').value.split('|');
+        const exercise = rawEx[0];
+        const muscle = rawEx[1] || 'Chest';
+        const date = document.getElementById('inpWorkoutDate').value || '2026-10-20';
+        const weightKg = Number(document.getElementById('inpLiftWeightKg').value) || 80;
+        const reps = Number(document.getElementById('inpLiftReps').value) || 6;
+        const sets = Number(document.getElementById('inpLiftSets').value) || 3;
+        const rpe = Number(document.getElementById('inpLiftRpe').value) || 8.5;
+
+        appState.workouts.push({ id: 'w_' + Date.now(), date, exercise, muscle, weightKg, reps, sets, rpe });
+        refreshAllViews();
+        showToast(`Logged ${sets}×${reps} ${exercise}`);
+      });
+
+      document.getElementById('selChartExerciseFilter').addEventListener('change', renderStrengthTab);
+
+      document.getElementById('inpSearchFood').addEventListener('input', renderFoodDatabaseGrid);
+      document.querySelectorAll('.food-cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedFoodCategory = btn.getAttribute('data-food-cat');
+          document.querySelectorAll('.food-cat-btn').forEach(b => {
+            b.className = 'food-cat-btn px-2.5 py-1 rounded-md bg-zinc-900 text-zinc-400 border border-zinc-800';
+          });
+          btn.className = 'food-cat-btn px-2.5 py-1 rounded-md bg-zinc-100 text-zinc-950 font-semibold';
+          renderFoodDatabaseGrid();
+        });
+      });
+
+      document.getElementById('btnAddCustomFood').addEventListener('click', () => {
+        const name = document.getElementById('inpCustomFoodName').value.trim() || 'Custom Meal';
+        const kcal = Number(document.getElementById('inpCustomFoodKcal').value) || 250;
+        const p = Number(document.getElementById('inpCustomFoodP').value) || 20;
+        const c = Number(document.getElementById('inpCustomFoodC').value) || 25;
+        const f = Number(document.getElementById('inpCustomFoodF').value) || 8;
+        addFoodToActiveDay({ name, kcal, p, c, f, fib: 3 });
+        document.getElementById('inpCustomFoodName').value = '';
+      });
+
+      document.getElementById('btnResetDayMacrosToBaseline').addEventListener('click', () => {
+        appState.sessionMealTray = [];
+        refreshAllViews();
+      });
+
+      // Modals
+      const modalProfile = document.getElementById('modalProfile');
+      const modalData = document.getElementById('modalData');
+      const modalPlayStore = document.getElementById('modalPlayStore');
+
+      document.getElementById('btnOpenProfileModal').addEventListener('click', () => {
+        const p = appState.profile;
+        document.getElementById('profSex').value = p.sex;
+        document.getElementById('profAge').value = p.age;
+        document.getElementById('profHeightCm').value = p.heightCm;
+        document.getElementById('profGoalWeightKg').value = p.goalWeightKg;
+        document.getElementById('profGoalBfPct').value = p.goalBfPct;
+        document.getElementById('profTargetKcal').value = p.targetKcal;
+        document.getElementById('profTargetProtein').value = p.targetProtein;
+        document.getElementById('profTargetCarbs').value = p.targetCarbs;
+        document.getElementById('profTargetFat').value = p.targetFat;
+        modalProfile.classList.remove('hidden');
+      });
+      document.getElementById('btnCloseProfileModal').addEventListener('click', () => modalProfile.classList.add('hidden'));
+
+      document.getElementById('btnAutoRecommendTargets').addEventListener('click', () => {
+        const enriched = computeEnrichedSeries(appState);
+        const latest = enriched[enriched.length - 1];
+        const recKcal = Math.max(1600, latest.adaptiveTdee - 250);
+        const recProt = Math.round(latest.ewmaWeightKg * 2.2);
+        const recFat = Math.round(latest.ewmaWeightKg * 0.85);
+        const recCarbs = Math.max(80, Math.round((recKcal - recProt * 4 - recFat * 9) / 4));
+
+        document.getElementById('profTargetKcal').value = recKcal;
+        document.getElementById('profTargetProtein').value = recProt;
+        document.getElementById('profTargetCarbs').value = recCarbs;
+        document.getElementById('profTargetFat').value = recFat;
+      });
+
+      document.getElementById('formProfileSettings').addEventListener('submit', (e) => {
+        e.preventDefault();
+        appState.profile = {
+          ...appState.profile,
+          sex: document.getElementById('profSex').value,
+          age: Number(document.getElementById('profAge').value) || 28,
+          heightCm: Number(document.getElementById('profHeightCm').value) || 175,
+          goalWeightKg: Number(document.getElementById('profGoalWeightKg').value) || 74,
+          goalBfPct: Number(document.getElementById('profGoalBfPct').value) || 14,
+          targetKcal: Number(document.getElementById('profTargetKcal').value) || 2150,
+          targetProtein: Number(document.getElementById('profTargetProtein').value) || 168,
+          targetCarbs: Number(document.getElementById('profTargetCarbs').value) || 210,
+          targetFat: Number(document.getElementById('profTargetFat').value) || 68
+        };
+        modalProfile.classList.add('hidden');
+        refreshAllViews();
+        showToast('Targets updated');
+      });
+
+      document.getElementById('btnOpenDataModal').addEventListener('click', () => modalData.classList.remove('hidden'));
+      document.getElementById('btnCloseDataModal').addEventListener('click', () => modalData.classList.add('hidden'));
+
+      document.getElementById('btnOpenPlayStoreModal').addEventListener('click', () => modalPlayStore.classList.remove('hidden'));
+      document.getElementById('btnClosePlayStoreModal').addEventListener('click', () => modalPlayStore.classList.add('hidden'));
+
+      document.getElementById('btnModalReloadDemo').addEventListener('click', () => {
+        appState = generateSeedState();
+        populateFormForDate('2026-10-20');
+        refreshAllViews();
+        modalData.classList.add('hidden');
+        showToast('Restored 30-day dataset');
+      });
+
+      document.getElementById('btnModalClearAll').addEventListener('click', () => {
+        const fresh = generateSeedState();
+        fresh.logs = [fresh.logs[fresh.logs.length - 1]];
+        fresh.workouts = [fresh.workouts[fresh.workouts.length - 1]];
+        fresh.sessionMealTray = [];
+        appState = fresh;
+        populateFormForDate(appState.logs[0].date);
+        refreshAllViews();
+        modalData.classList.add('hidden');
+        showToast('Cleared demo data');
+      });
+
+      document.getElementById('btnExportCsv').addEventListener('click', () => {
+        const enriched = computeEnrichedSeries(appState);
+        const headers = ['Date','ScaleWeight_kg','EWMA_Trend_kg','BodyFat_pct','LeanMass_kg','FatMass_kg','Waist_cm','Neck_cm','Calories_kcal','AdaptiveTDEE_kcal','Protein_g','Carbs_g','Fat_g'];
+        const rows = enriched.map(r => [
+          r.date, r.weightKg, r.ewmaWeightKg, r.bfPct, r.leanMassKg, r.fatMassKg, r.waistCm, r.neckCm, r.calories, r.adaptiveTdee, r.proteinG, r.carbsG, r.fatG
+        ].join(','));
+        const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'recompiq_export.csv';
+        document.body.appendChild(a); a.click(); a.remove();
+      });
+
+      document.getElementById('btnExportJson').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(appState, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'recompiq_backup.json';
+        document.body.appendChild(a); a.click(); a.remove();
+      });
+
+      document.getElementById('inpImportJsonFile').addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const parsed = JSON.parse(evt.target.result);
+            if (parsed && Array.isArray(parsed.logs) && parsed.profile) {
+              appState = parsed;
+              populateFormForDate(appState.logs[appState.logs.length - 1].date);
+              refreshAllViews();
+              modalData.classList.add('hidden');
+              showToast('Restored backup');
+            }
+          } catch (err) {}
+        };
+        reader.readAsText(file);
+      });
+
+      
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        });
+      }
+
+      window.addEventListener('load', () => {
+        populateFormForDate(getActiveDateStr());
+        refreshAllViews();
+      });
+    })();
+  </script>
+</body>
+</html>

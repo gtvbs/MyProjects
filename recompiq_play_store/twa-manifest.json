@@ -1,0 +1,32 @@
+{
+  "packageId": "com.recompiq.app",
+  "host": "your-domain.example.com",
+  "name": "RecompIQ",
+  "launcherName": "RecompIQ",
+  "display": "standalone",
+  "themeColor": "#09090B",
+  "navigationColor": "#09090B",
+  "navigationColorDark": "#09090B",
+  "navigationDividerColor": "#27272A",
+  "navigationDividerColorDark": "#27272A",
+  "backgroundColor": "#09090B",
+  "enableNotifications": false,
+  "startUrl": "/index.html",
+  "iconUrl": "https://your-domain.example.com/icons/icon-512.png",
+  "maskableIconUrl": "https://your-domain.example.com/icons/maskable-icon-512.png",
+  "appVersionName": "2.4.0",
+  "appVersionCode": 24,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://your-domain.example.com/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "minSdkVersion": 24,
+  "orientation": "portrait"
+}
