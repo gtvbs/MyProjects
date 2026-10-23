@@ -3,7 +3,7 @@ def main():
     print (f"The squared is {square(number)}")
 
 def square(number):
-    return number * number    
+    return number + number    
 
 if __name__ == "__main__":
     main()
